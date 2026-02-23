@@ -1,0 +1,902 @@
+basePath: /api
+definitions:
+  models.Auth:
+    properties:
+      bookings:
+        items:
+          $ref: '#/definitions/models.Booking'
+        type: array
+      code_redeems:
+        items:
+          $ref: '#/definitions/models.CodeRedeem'
+        type: array
+      created_at:
+        type: string
+      display_name:
+        maxLength: 255
+        minLength: 2
+        type: string
+      email:
+        type: string
+      phone:
+        type: string
+      profile:
+        allOf:
+        - $ref: '#/definitions/models.Profile'
+        description: Relationships
+      reports:
+        items:
+          $ref: '#/definitions/models.Report'
+        type: array
+      reward_redeems:
+        items:
+          $ref: '#/definitions/models.RewardRedeem'
+        type: array
+      rewards:
+        items:
+          $ref: '#/definitions/models.Reward'
+        type: array
+      uid:
+        type: string
+      updated_at:
+        type: string
+    required:
+    - display_name
+    - email
+    type: object
+  models.Booking:
+    properties:
+      booked_time_end:
+        type: string
+      booked_time_start:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: string
+      parking_slot:
+        $ref: '#/definitions/models.ParkingSlot'
+      parking_zone:
+        $ref: '#/definitions/models.ParkingZone'
+      place:
+        $ref: '#/definitions/models.Place'
+      place_id:
+        type: string
+      slot_id:
+        type: string
+      status:
+        allOf:
+        - $ref: '#/definitions/models.BookingStatus'
+        enum:
+        - CONFIRMED
+        - COMPLETED
+        - CANCELLED
+      updated_at:
+        type: string
+      user:
+        allOf:
+        - $ref: '#/definitions/models.Auth'
+        description: Relationships
+      user_id:
+        type: string
+      zone_id:
+        type: string
+    required:
+    - booked_time_end
+    - booked_time_start
+    - status
+    type: object
+  models.BookingStatus:
+    enum:
+    - CONFIRMED
+    - COMPLETED
+    - CANCELLED
+    type: string
+    x-enum-varnames:
+    - BookingConfirmed
+    - BookingCompleted
+    - BookingCancelled
+  models.CodeRedeem:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      type:
+        type: string
+      updated_at:
+        type: string
+      user:
+        allOf:
+        - $ref: '#/definitions/models.Auth'
+        description: Relationship
+      user_id:
+        type: string
+    type: object
+  models.ParkingSlot:
+    properties:
+      bookings:
+        items:
+          $ref: '#/definitions/models.Booking'
+        type: array
+      created_at:
+        type: string
+      id:
+        type: string
+      name:
+        maxLength: 50
+        type: string
+      parking_zone:
+        allOf:
+        - $ref: '#/definitions/models.ParkingZone'
+        description: Relationships
+      reports:
+        items:
+          $ref: '#/definitions/models.Report'
+        type: array
+      sensors:
+        items:
+          $ref: '#/definitions/models.Sensor'
+        type: array
+      updated_at:
+        type: string
+      zone_id:
+        type: string
+    required:
+    - name
+    type: object
+  models.ParkingZone:
+    properties:
+      bookings:
+        items:
+          $ref: '#/definitions/models.Booking'
+        type: array
+      created_at:
+        type: string
+      hour_rate:
+        minimum: 0
+        type: number
+      id:
+        type: string
+      name:
+        maxLength: 100
+        type: string
+      parking_slots:
+        items:
+          $ref: '#/definitions/models.ParkingSlot'
+        type: array
+      place:
+        allOf:
+        - $ref: '#/definitions/models.Place'
+        description: Relationships
+      place_id:
+        type: string
+      reports:
+        items:
+          $ref: '#/definitions/models.Report'
+        type: array
+      updated_at:
+        type: string
+    required:
+    - hour_rate
+    - name
+    type: object
+  models.Place:
+    properties:
+      address:
+        maxLength: 500
+        minLength: 5
+        type: string
+      bookings:
+        items:
+          $ref: '#/definitions/models.Booking'
+        type: array
+      contact:
+        maxLength: 100
+        type: string
+      coordinate_x:
+        type: string
+      coordinate_y:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      images:
+        items:
+          $ref: '#/definitions/models.PlaceImage'
+        type: array
+      parking_zones:
+        description: Relationships
+        items:
+          $ref: '#/definitions/models.ParkingZone'
+        type: array
+      reports:
+        items:
+          $ref: '#/definitions/models.Report'
+        type: array
+      type:
+        maxLength: 50
+        type: string
+      updated_at:
+        type: string
+    required:
+    - address
+    - coordinate_x
+    - coordinate_y
+    - type
+    type: object
+  models.PlaceImage:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      path:
+        maxLength: 500
+        type: string
+      place:
+        allOf:
+        - $ref: '#/definitions/models.Place'
+        description: Relationship
+      place_id:
+        type: string
+      updated_at:
+        type: string
+    required:
+    - path
+    type: object
+  models.Profile:
+    properties:
+      auth:
+        allOf:
+        - $ref: '#/definitions/models.Auth'
+        description: Relationship
+      created_at:
+        type: string
+      phone:
+        type: string
+      point:
+        type: integer
+      uid:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  models.Report:
+    properties:
+      content:
+        maxLength: 2000
+        minLength: 10
+        type: string
+      created_at:
+        type: string
+      id:
+        type: string
+      image:
+        maxLength: 500
+        type: string
+      parking_slot:
+        $ref: '#/definitions/models.ParkingSlot'
+      parking_zone:
+        $ref: '#/definitions/models.ParkingZone'
+      place:
+        $ref: '#/definitions/models.Place'
+      place_id:
+        type: string
+      slot_id:
+        type: string
+      state:
+        allOf:
+        - $ref: '#/definitions/models.ReportState'
+        enum:
+        - PENDING
+        - APPROVED
+        - REJECTED
+      timestamp:
+        type: string
+      updated_at:
+        type: string
+      user:
+        allOf:
+        - $ref: '#/definitions/models.Auth'
+        description: Relationships
+      user_id:
+        type: string
+      zone_id:
+        type: string
+    required:
+    - content
+    - state
+    type: object
+  models.ReportState:
+    enum:
+    - PENDING
+    - APPROVED
+    - REJECTED
+    type: string
+    x-enum-varnames:
+    - ReportPending
+    - ReportApproved
+    - ReportRejected
+  models.Reward:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      reward_redeems:
+        items:
+          $ref: '#/definitions/models.RewardRedeem'
+        type: array
+      type:
+        type: string
+      updated_at:
+        type: string
+      user:
+        allOf:
+        - $ref: '#/definitions/models.Auth'
+        description: Relationship
+      user_id:
+        type: string
+    type: object
+  models.RewardRedeem:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      reward:
+        allOf:
+        - $ref: '#/definitions/models.Reward'
+        description: Relationships
+      reward_id:
+        type: string
+      updated_at:
+        type: string
+      user:
+        $ref: '#/definitions/models.Auth'
+      user_id:
+        type: string
+    type: object
+  models.Sensor:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      name:
+        maxLength: 100
+        type: string
+      parking_slot:
+        allOf:
+        - $ref: '#/definitions/models.ParkingSlot'
+        description: Relationship
+      slot_id:
+        type: string
+      updated_at:
+        type: string
+      url:
+        maxLength: 500
+        type: string
+    required:
+    - name
+    - url
+    type: object
+host: localhost:5000
+info:
+  contact: {}
+  description: This is a JodHere API documentation
+  title: JodHere API
+  version: "1.0"
+paths:
+  /api/v1:
+    get:
+      consumes:
+      - application/json
+      description: Returns a small index of API endpoints
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Welcome
+      tags:
+      - Health
+  /api/v1/auth:
+    get:
+      consumes:
+      - application/json
+      description: List auth records with pagination
+      parameters:
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Page size
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Auth'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: List auths
+      tags:
+      - Auth
+    post:
+      consumes:
+      - application/json
+      description: Create a new auth record
+      parameters:
+      - description: Auth payload
+        in: body
+        name: auth
+        required: true
+        schema:
+          $ref: '#/definitions/models.Auth'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Auth'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Create Auth
+      tags:
+      - Auth
+  /api/v1/auth/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete an auth record by UUID
+      parameters:
+      - description: Auth UUID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Delete an auth
+      tags:
+      - Auth
+    get:
+      consumes:
+      - application/json
+      description: Retrieve an auth record by UUID
+      parameters:
+      - description: Auth UUID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Auth'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get auth by ID
+      tags:
+      - Auth
+    put:
+      consumes:
+      - application/json
+      description: Update an auth record by UUID
+      parameters:
+      - description: Auth UUID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Auth payload
+        in: body
+        name: auth
+        required: true
+        schema:
+          $ref: '#/definitions/models.Auth'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Auth'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Update an auth
+      tags:
+      - Auth
+  /api/v1/parking-zones:
+    get:
+      consumes:
+      - application/json
+      description: List parking zones with optional filtering and pagination
+      parameters:
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Page size
+        in: query
+        name: page_size
+        type: integer
+      - description: Place UUID
+        in: query
+        name: place_id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.ParkingZone'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: List parking zones
+      tags:
+      - ParkingZone
+    post:
+      consumes:
+      - application/json
+      description: Create a new parking zone
+      parameters:
+      - description: ParkingZone payload
+        in: body
+        name: zone
+        required: true
+        schema:
+          $ref: '#/definitions/models.ParkingZone'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.ParkingZone'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Create Parking Zone
+      tags:
+      - ParkingZone
+  /api/v1/parking-zones/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a parking zone by UUID
+      parameters:
+      - description: ParkingZone UUID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Delete a parking zone
+      tags:
+      - ParkingZone
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a parking zone by UUID
+      parameters:
+      - description: ParkingZone UUID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ParkingZone'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get parking zone by ID
+      tags:
+      - ParkingZone
+    put:
+      consumes:
+      - application/json
+      description: Update a parking zone by UUID
+      parameters:
+      - description: ParkingZone UUID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: ParkingZone payload
+        in: body
+        name: zone
+        required: true
+        schema:
+          $ref: '#/definitions/models.ParkingZone'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ParkingZone'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Update a parking zone
+      tags:
+      - ParkingZone
+  /api/v1/places:
+    get:
+      consumes:
+      - application/json
+      description: List places with optional filtering and pagination
+      parameters:
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Page size
+        in: query
+        name: page_size
+        type: integer
+      - description: Place type
+        in: query
+        name: type
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Place'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: List places
+      tags:
+      - Place
+    post:
+      consumes:
+      - application/json
+      description: Create a new place
+      parameters:
+      - description: Place payload
+        in: body
+        name: place
+        required: true
+        schema:
+          $ref: '#/definitions/models.Place'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Place'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Create Place
+      tags:
+      - Place
+  /api/v1/places/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a place by UUID
+      parameters:
+      - description: Place UUID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Delete a place
+      tags:
+      - Place
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a place by UUID
+      parameters:
+      - description: Place UUID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Place'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get place by ID
+      tags:
+      - Place
+    put:
+      consumes:
+      - application/json
+      description: Update a place by UUID
+      parameters:
+      - description: Place UUID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Place payload
+        in: body
+        name: place
+        required: true
+        schema:
+          $ref: '#/definitions/models.Place'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Place'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Update a place
+      tags:
+      - Place
+  /health:
+    get:
+      consumes:
+      - application/json
+      description: Return API health status
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Health check
+      tags:
+      - Health
+schemes:
+- http
+swagger: "2.0"
