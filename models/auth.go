@@ -16,7 +16,7 @@ type Auth struct {
 	UpdatedAt   time.Time `gorm:"autoUpdateTime" json:"updated_at"`
 
 	// Relationships
-	Profile       *Profile       `gorm:"foreignKey:UID" json:"profile,omitempty"`
+	Profile       *Profile       `gorm:"foreignKey:UID;references:UID" json:"profile,omitempty"`
 	Bookings      []Booking      `gorm:"foreignKey:UserID" json:"bookings,omitempty"`
 	Reports       []Report       `gorm:"foreignKey:UserID" json:"reports,omitempty"`
 	CodeRedeems   []CodeRedeem   `gorm:"foreignKey:UserID" json:"code_redeems,omitempty"`

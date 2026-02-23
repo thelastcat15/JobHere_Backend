@@ -16,5 +16,5 @@ type Sensor struct {
 	UpdatedAt time.Time `gorm:"autoUpdateTime" json:"updated_at"`
 
 	// Relationship
-	ParkingSlot *ParkingSlot `gorm:"foreignKey:SlotID;references:SlotID" json:"parking_slot,omitempty"`
+	ParkingSlot *ParkingSlot `gorm:"foreignKey:SlotID;references:ID" json:"parking_slot,omitempty"`
 }

@@ -15,5 +15,5 @@ type PlaceImage struct {
 	UpdatedAt time.Time `gorm:"autoUpdateTime" json:"updated_at"`
 
 	// Relationship
-	Place *Place `gorm:"foreignKey:PlaceID;references:PlaceID" json:"place,omitempty"`
+	Place *Place `gorm:"foreignKey:PlaceID;references:ID" json:"place,omitempty"`
 }
