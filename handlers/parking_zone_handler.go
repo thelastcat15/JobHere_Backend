@@ -7,9 +7,9 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
-	"jobhere.backend/config"
-	"jobhere.backend/models"
-	"jobhere.backend/utils"
+	"jodhere.backend/config"
+	"jodhere.backend/models"
+	"jodhere.backend/utils"
 )
 
 // CreateParkingZone godoc

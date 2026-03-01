@@ -6,7 +6,7 @@ import (
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"jobhere.backend/models"
+	"jodhere.backend/models"
 )
 
 var DB *gorm.DB

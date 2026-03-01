@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"jobhere.backend/utils"
+	"jodhere.backend/utils"
 )
 
 // HealthCheck godoc
@@ -29,7 +29,7 @@ func HealthCheck(c *fiber.Ctx) error {
 // @Success 200 {object} map[string]interface{}
 // @Router /api/v1 [get]
 func Welcome(c *fiber.Ctx) error {
-	return utils.SuccessResponse(c, fiber.StatusOK, "Welcome to JobHere API", fiber.Map{
+	return utils.SuccessResponse(c, fiber.StatusOK, "Welcome to JodHere API", fiber.Map{
 		"endpoints": []fiber.Map{
 			{"method": "GET", "path": "/health", "description": "Health check"},
 			{"method": "GET", "path": "/api/v1/auth", "description": "List all auth records"},

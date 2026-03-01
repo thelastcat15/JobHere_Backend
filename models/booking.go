@@ -20,7 +20,7 @@ type Booking struct {
 	UpdatedAt       time.Time     `gorm:"autoUpdateTime" json:"updated_at"`
 
 	// Relationships
-	User        *Auth        `gorm:"foreignKey:UserID;references:UID" json:"user,omitempty"`
+	User        *Profile     `gorm:"foreignKey:UserID;references:UID" json:"user,omitempty"`
 	Place       *Place       `gorm:"foreignKey:PlaceID;references:ID" json:"place,omitempty"`
 	ParkingZone *ParkingZone `gorm:"foreignKey:ZoneID;references:ID" json:"parking_zone,omitempty"`
 	ParkingSlot *ParkingSlot `gorm:"foreignKey:SlotID;references:ID" json:"parking_slot,omitempty"`

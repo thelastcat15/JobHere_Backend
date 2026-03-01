@@ -19,7 +19,6 @@ const (
 // AutoMigrate will migrate all models in the package
 func AutoMigrate(db *gorm.DB) error {
 	return db.AutoMigrate(
-		&Auth{},
 		&Profile{},
 		&Place{},
 		&ParkingZone{},

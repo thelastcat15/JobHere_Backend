@@ -1,4 +1,4 @@
-# JobHere Backend Setup Guide
+# JodHere Backend Setup Guide
 
 ## 🚀 Quick Start
 
@@ -55,7 +55,7 @@ Expected response:
 ```json
 {
   "status": "ok",
-  "message": "JobHere API is running"
+  "message": "JodHere API is running"
 }
 ```
 
@@ -64,7 +64,7 @@ Expected response:
 ## 📁 Project Structure
 
 ```
-JobHere_Backend/
+JodHere_Backend/
 ├── config/
 │   ├── database.go       # Supabase DB connection
 │   └── env.go            # Environment variables
@@ -143,7 +143,7 @@ api.Get("/places", func(c *fiber.Ctx) error {
 
 Use the global `DB` instance:
 ```go
-import "jobhere.backend/config"
+import "jodhere.backend/config"
 
 db := config.GetDB()
 

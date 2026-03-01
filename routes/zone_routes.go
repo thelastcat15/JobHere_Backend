@@ -2,7 +2,7 @@ package routes
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"jobhere.backend/handlers"
+	"jodhere.backend/handlers"
 )
 
 // RegisterZoneRoutes registers parking-zone-related endpoints

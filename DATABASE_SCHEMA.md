@@ -1,7 +1,7 @@
-# JobHere Database Schema Documentation
+# JodHere Database Schema Documentation
 
 ## Overview
-This document outlines the database schema for the JobHere parking management system. The database is designed using PostgreSQL/MongoDB compatible structure with proper relationships and constraints.
+This document outlines the database schema for the JodHere parking management system. The database is designed using PostgreSQL/MongoDB compatible structure with proper relationships and constraints.
 
 ---
 

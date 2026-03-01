@@ -15,6 +15,6 @@ type RewardRedeem struct {
 	UpdatedAt time.Time `gorm:"autoUpdateTime" json:"updated_at"`
 
 	// Relationships
-	Reward *Reward `gorm:"foreignKey:RewardID;references:ID" json:"reward,omitempty"`
-	User   *Auth   `gorm:"foreignKey:UserID;references:UID" json:"user,omitempty"`
+	Reward *Reward  `gorm:"foreignKey:RewardID;references:ID" json:"reward,omitempty"`
+	User   *Profile `gorm:"foreignKey:UserID;references:UID" json:"user,omitempty"`
 }

@@ -15,5 +15,5 @@ type CodeRedeem struct {
 	UpdatedAt time.Time `gorm:"autoUpdateTime" json:"updated_at"`
 
 	// Relationship
-	User *Auth `gorm:"foreignKey:UserID;references:UID" json:"user,omitempty"`
+	User *Profile `gorm:"foreignKey:UserID;references:UID" json:"user,omitempty"`
 }

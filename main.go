@@ -9,14 +9,16 @@ package main
 
 import (
 	"log"
+	"os"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/swagger"
-	"jobhere.backend/config"
-	_ "jobhere.backend/docs"
-	"jobhere.backend/routes"
+	"jodhere.backend/config"
+	_ "jodhere.backend/docs"
+	"jodhere.backend/routes"
+	"jodhere.backend/utils"
 )
 
 // @title JodHere API
@@ -39,9 +41,18 @@ func main() {
 	// Close database connection on exit
 	defer config.CloseDB()
 
+	jwksURL := os.Getenv("SUPABASE_JWKS_URL")
+	if jwksURL == "" {
+		log.Fatal("SUPABASE_JWKS_URL environment variable is not set")
+	}
+
+	if err := utils.InitJWKS(jwksURL); err != nil {
+		log.Fatal("Failed to init JWKS:", err)
+	}
+
 	// Create Fiber app with custom config
 	app := fiber.New(fiber.Config{
-		AppName:       "JobHere Backend v1.0.0",
+		AppName:       "JodHere Backend v1.0.0",
 		ErrorHandler:  errorHandler,
 		StrictRouting: false,
 	})
@@ -62,8 +73,8 @@ func main() {
 	// Serve swagger UI at /swagger/*
 	app.Get("/swagger/*", swagger.HandlerDefault)
 
-	port := ":3000"
-	log.Printf("🚀 Starting JobHere Backend server on %s", port)
+	port := ":5000"
+	log.Printf("🚀 Starting JodHere Backend server on %s", port)
 
 	if err := app.Listen(port); err != nil {
 		log.Fatalf("Failed to start server: %v", err)
