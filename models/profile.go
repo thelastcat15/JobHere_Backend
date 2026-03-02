@@ -16,3 +16,8 @@ type Profile struct {
 	CreatedAt   time.Time `gorm:"autoCreateTime" json:"created_at"`
 	UpdatedAt   time.Time `gorm:"autoUpdateTime" json:"updated_at"`
 }
+
+type UpdateProfileRequest struct {
+	DisplayName string `json:"display_name" validate:"required,min=2,max=100"`
+	Phone       string `json:"phone,omitempty" validate:"omitempty,e164,max=20"`
+}

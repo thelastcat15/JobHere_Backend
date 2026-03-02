@@ -137,29 +137,43 @@ func ListProfile(c *fiber.Ctx) error {
 // @Failure 404 {object} map[string]interface{}
 // @Router /api/v1/profile [put]
 func UpdateProfile(c *fiber.Ctx) error {
-	uid, err := uuid.Parse(c.Locals("user_id").(string))
+	uidStr, ok := c.Locals("user_id").(string)
+	if !ok {
+		return utils.ErrorResponse(c, fiber.StatusUnauthorized, "Unauthorized", nil)
+	}
+
+	uid, err := uuid.Parse(uidStr)
 	if err != nil {
 		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Invalid UUID format", nil)
 	}
 
-	var updateData models.Profile
-
-	if err := c.BodyParser(&updateData); err != nil {
+	var req models.UpdateProfileRequest
+	if err := c.BodyParser(&req); err != nil {
 		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Invalid request body", err.Error())
 	}
 
 	var profile models.Profile
-
-	result := config.DB.First(&profile, "uid = ?", uid)
-	if result.Error != nil {
-		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+	if err := config.DB.First(&profile, "uid = ?", uid).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return utils.ErrorResponse(c, fiber.StatusNotFound, "Profile not found", nil)
 		}
-		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to retrieve profile", result.Error.Error())
+		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Database error", err.Error())
 	}
 
-	if err := config.DB.Model(&profile).Updates(updateData).Error; err != nil {
+	updates := make(map[string]interface{})
+	updates["display_name"] = req.DisplayName
+	updates["phone"] = req.Phone
+
+	if len(updates) == 0 {
+		return utils.ErrorResponse(c, fiber.StatusBadRequest, "No fields to update", nil)
+	}
+
+	if err := config.DB.Model(&profile).Updates(updates).Error; err != nil {
 		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to update profile", err.Error())
+	}
+
+	if err := config.DB.First(&profile, "uid = ?", uid).Error; err != nil {
+		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to reload profile", err.Error())
 	}
 
 	return utils.SuccessResponse(c, fiber.StatusOK, "Profile updated successfully", profile)

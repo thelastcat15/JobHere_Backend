@@ -13,8 +13,8 @@ type Place struct {
 	Contact     string    `gorm:"type:varchar(100);default:null" json:"contact" validate:"omitempty,max=100"`
 	Address     string    `gorm:"type:text;not null" json:"address" validate:"required,min=5,max=500"`
 	Description string    `gorm:"type:text;default:null" json:"description"`
-	CoordinateX string    `gorm:"type:varchar(50);not null" json:"coordinate_x" validate:"required,latitude"`
-	CoordinateY string    `gorm:"type:varchar(50);not null" json:"coordinate_y" validate:"required,longitude"`
+	CoordinateX float64   `gorm:"type:numeric(10,6);not null" json:"coordinate_x" validate:"required,latitude"`
+	CoordinateY float64   `gorm:"type:numeric(10,6);not null" json:"coordinate_y" validate:"required,longitude"`
 	CreatedAt   time.Time `gorm:"autoCreateTime" json:"created_at"`
 	UpdatedAt   time.Time `gorm:"autoUpdateTime" json:"updated_at"`
 

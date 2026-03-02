@@ -95,7 +95,7 @@ func GetPlace(c *fiber.Ctx) error {
 // @Router /api/v1/places [get]
 func ListPlaces(c *fiber.Ctx) error {
 	page, _ := strconv.Atoi(c.Query("page", "1"))
-	pageSize, _ := strconv.Atoi(c.Query("page_size", "10"))
+	pageSize, _ := strconv.Atoi(c.Query("page_size", "20"))
 	placeType := c.Query("type", "")
 
 	if page < 1 {

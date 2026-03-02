@@ -16,7 +16,6 @@ func SetupRoutes(app *fiber.App) {
 	// register grouped routes in separate files
 	RegisterProfileRoutes(api.Group("/profile"))
 	RegisterPlaceRoutes(api.Group("/places"))
-	RegisterZoneRoutes(api.Group("/parking-zones"))
 
 	// catch-all handled by NotFound above
 }
