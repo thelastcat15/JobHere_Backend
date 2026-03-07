@@ -298,7 +298,7 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "description": "Place UUID",
-                        "name": "place_id",
+                        "name": "parking_id",
                         "in": "query"
                     }
                 ],
@@ -863,7 +863,7 @@ const docTemplate = `{
                 "place": {
                     "$ref": "#/definitions/models.Place"
                 },
-                "place_id": {
+                "parking_id": {
                     "type": "string"
                 },
                 "slot_id": {
@@ -1032,7 +1032,7 @@ const docTemplate = `{
                         }
                     ]
                 },
-                "place_id": {
+                "parking_id": {
                     "type": "string"
                 },
                 "reports": {
@@ -1137,7 +1137,7 @@ const docTemplate = `{
                         }
                     ]
                 },
-                "place_id": {
+                "parking_id": {
                     "type": "string"
                 },
                 "updated_at": {
@@ -1204,7 +1204,7 @@ const docTemplate = `{
                 "place": {
                     "$ref": "#/definitions/models.Place"
                 },
-                "place_id": {
+                "parking_id": {
                     "type": "string"
                 },
                 "slot_id": {

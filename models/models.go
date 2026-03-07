@@ -11,16 +11,19 @@ const (
 	ReportApproved ReportState = "APPROVED"
 	ReportRejected ReportState = "REJECTED"
 
+	BookingPending   BookingStatus = "PENDING"
 	BookingConfirmed BookingStatus = "CONFIRMED"
+	BookingCheckedIn BookingStatus = "CHECKED_IN"
 	BookingCompleted BookingStatus = "COMPLETED"
 	BookingCancelled BookingStatus = "CANCELLED"
+	BookingExpired   BookingStatus = "EXPIRED"
 )
 
 // AutoMigrate will migrate all models in the package
 func AutoMigrate(db *gorm.DB) error {
 	return db.AutoMigrate(
 		&Profile{},
-		&Place{},
+		&Parking{},
 		&ParkingZone{},
 		&ParkingSlot{},
 		&Sensor{},

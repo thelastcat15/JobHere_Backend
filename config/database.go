@@ -6,6 +6,7 @@ import (
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"jodhere.backend/cronjobs"
 	"jodhere.backend/models"
 )
 
@@ -24,6 +25,13 @@ func InitSupabaseDB() error {
 	}
 
 	DB = db
+
+	sqlDB, err := db.DB()
+	if err != nil {
+		return err
+	}
+	sqlDB.SetMaxOpenConns(25)
+	sqlDB.SetMaxIdleConns(10)
 	log.Println("✅ Successfully connected to Supabase PostgreSQL")
 
 	// Auto migrate all models
@@ -33,6 +41,11 @@ func InitSupabaseDB() error {
 	}
 
 	log.Println("✅ All migrations completed successfully")
+
+	cronjobs.StartBookingCron(db)
+
+	log.Println("✅ Start Cronjob completed successfully")
+
 	return nil
 }
 

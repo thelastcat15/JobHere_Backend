@@ -22,34 +22,6 @@ type ParkingSlot struct {
 	Reports     []Report     `gorm:"foreignKey:SlotID;constraint:OnDelete:CASCADE;" json:"reports,omitempty"`
 }
 
-type PlaceResponse struct {
-	ID             uuid.UUID `json:"id"`
-	Type           string    `json:"type"`
-	Contact        string    `json:"contact"`
-	Address        string    `json:"address"`
-	Description    string    `json:"description"`
-	CoordinateX    float64   `json:"coordinate_x"`
-	CoordinateY    float64   `json:"coordinate_y"`
-	AvailableSlots int64     `json:"available_slots" gorm:"column:available_slots"`
-}
-
-type PlaceDetailResponse struct {
-	ID          uuid.UUID      `json:"id"`
-	Type        string         `json:"type"`
-	Contact     string         `json:"contact"`
-	Address     string         `json:"address"`
-	Description string         `json:"description"`
-	CoordinateX float64        `json:"coordinate_x"`
-	CoordinateY float64        `json:"coordinate_y"`
-	Images      []PlaceImage   `json:"images"`
-	Zones       []ZoneResponse `json:"zones"`
-}
-
-type ZoneResponse struct {
-	ID   uuid.UUID `json:"id"`
-	Name string    `json:"name"`
-}
-
 type ParkingSlotResponse struct {
 	ID     uuid.UUID `json:"id"`
 	ZoneID uuid.UUID `json:"zone_id"`

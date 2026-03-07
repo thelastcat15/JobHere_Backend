@@ -14,7 +14,7 @@ type Report struct {
 	Content   string      `gorm:"type:text;not null" json:"content" validate:"required,min=10,max=2000"`
 	Timestamp time.Time   `gorm:"not null;default:CURRENT_TIMESTAMP" json:"timestamp"`
 	State     ReportState `gorm:"type:varchar(50);not null;default:'PENDING'" json:"state" validate:"required,oneof=PENDING APPROVED REJECTED"`
-	PlaceID   uuid.UUID   `gorm:"type:uuid;not null;index" json:"place_id"`
+	ParkingID uuid.UUID   `gorm:"type:uuid;not null;index" json:"parking_id"`
 	ZoneID    uuid.UUID   `gorm:"type:uuid;index;default:null" json:"zone_id"`
 	SlotID    uuid.UUID   `gorm:"type:uuid;index;default:null" json:"slot_id"`
 	CreatedAt time.Time   `gorm:"autoCreateTime" json:"created_at"`
@@ -22,7 +22,7 @@ type Report struct {
 
 	// Relationships
 	User        *Profile     `gorm:"foreignKey:UserID;references:UID" json:"user,omitempty"`
-	Place       *Place       `gorm:"foreignKey:PlaceID;references:ID" json:"place,omitempty"`
+	Parking     *Parking     `gorm:"foreignKey:ParkingID;references:ID" json:"parking,omitempty"`
 	ParkingZone *ParkingZone `gorm:"foreignKey:ZoneID;references:ID" json:"parking_zone,omitempty"`
 	ParkingSlot *ParkingSlot `gorm:"foreignKey:SlotID;references:ID" json:"parking_slot,omitempty"`
 }

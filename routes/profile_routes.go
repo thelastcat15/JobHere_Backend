@@ -9,4 +9,5 @@ import (
 func RegisterProfileRoutes(r fiber.Router) {
 	r.Get("/", handlers.GetProfile)
 	r.Put("/", handlers.UpdateProfile)
+	r.Get("/bookings", handlers.GetBookings)
 }

@@ -60,7 +60,7 @@ definitions:
         $ref: '#/definitions/models.ParkingZone'
       place:
         $ref: '#/definitions/models.Place'
-      place_id:
+      parking_id:
         type: string
       slot_id:
         type: string
@@ -169,7 +169,7 @@ definitions:
         allOf:
         - $ref: '#/definitions/models.Place'
         description: Relationships
-      place_id:
+      parking_id:
         type: string
       reports:
         items:
@@ -241,7 +241,7 @@ definitions:
         allOf:
         - $ref: '#/definitions/models.Place'
         description: Relationship
-      place_id:
+      parking_id:
         type: string
       updated_at:
         type: string
@@ -284,7 +284,7 @@ definitions:
         $ref: '#/definitions/models.ParkingZone'
       place:
         $ref: '#/definitions/models.Place'
-      place_id:
+      parking_id:
         type: string
       slot_id:
         type: string
@@ -579,7 +579,7 @@ paths:
         type: integer
       - description: Place UUID
         in: query
-        name: place_id
+        name: parking_id
         type: string
       produces:
       - application/json
