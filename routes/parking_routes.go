@@ -10,4 +10,5 @@ func RegisterParkingRoutes(r fiber.Router) {
 	r.Get("/", handlers.ListParking)
 	r.Get("/:parking_id", handlers.GetParking)
 	r.Get("/:parking_id/zones/:zone_id/slots", handlers.GetParkingSlots)
+	r.Delete("/:parking_id", handlers.DeleteParking)
 }

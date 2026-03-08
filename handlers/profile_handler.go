@@ -189,11 +189,14 @@ func UpdateProfile(c *fiber.Ctx) error {
 // @Success 200 {object} utils.Response
 // @Failure 400 {object} utils.Response
 // @Failure 404 {object} utils.Response
-// @Router /api/v1/profile/{id} [delete]
+// @Router /api/v1/profile [delete]
 func DeleteProfile(c *fiber.Ctx) error {
-	id := c.Params("id")
+	uidStr, ok := c.Locals("user_id").(string)
+	if !ok {
+		return utils.ErrorResponse(c, fiber.StatusUnauthorized, "Unauthorized", nil)
+	}
 
-	uid, err := uuid.Parse(id)
+	uid, err := uuid.Parse(uidStr)
 	if err != nil {
 		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Invalid UUID format", nil)
 	}
