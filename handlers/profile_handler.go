@@ -199,23 +199,7 @@ func DeleteProfile(c *fiber.Ctx) error {
 		return utils.ErrorResponse(c, fiber.StatusUnauthorized, "Unauthorized", nil)
 	}
 
-	uid, err := uuid.Parse(uidStr)
-	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Invalid UUID format", nil)
-	}
-
-	// 1. Delete profile from DB
-	result := config.DB.Delete(&models.Profile{}, "uid = ?", uid)
-	if result.Error != nil {
-		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to delete profile", result.Error.Error())
-	}
-
-	if result.RowsAffected == 0 {
-		return utils.ErrorResponse(c, fiber.StatusNotFound, "Profile not found", nil)
-	}
-
-	// 2. Delete auth user from Supabase
-	supabaseURL := os.Getenv("SUPABASE_URL")
+	supabaseURL := os.Getenv("SUPABASE_URL_HTTP")
 	serviceRoleKey := os.Getenv("SUPABASE_SERVICE_ROLE_KEY")
 
 	req, err := http.NewRequest(

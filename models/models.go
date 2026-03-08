@@ -11,12 +11,10 @@ const (
 	ReportApproved ReportState = "APPROVED"
 	ReportRejected ReportState = "REJECTED"
 
-	BookingPending   BookingStatus = "PENDING"
-	BookingConfirmed BookingStatus = "CONFIRMED"
-	BookingCheckedIn BookingStatus = "CHECKED_IN"
-	BookingCompleted BookingStatus = "COMPLETED"
-	BookingCancelled BookingStatus = "CANCELLED"
-	BookingExpired   BookingStatus = "EXPIRED"
+	BookingPending   BookingStatus = "PENDING"   // จองอยู่ (Booking in progress)
+	BookingArrived   BookingStatus = "ARRIVED"   // ถึงแล้วรอจ่ายตัง (Arrived and waiting to pay)
+	BookingCompleted BookingStatus = "COMPLETED" // เสร็จสิ้น (Completed)
+	BookingCancelled BookingStatus = "CANCELLED" // ยกเลิก (Cancelled)
 )
 
 // AutoMigrate will migrate all models in the package

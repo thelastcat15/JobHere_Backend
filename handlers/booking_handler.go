@@ -251,70 +251,6 @@ func CreateBooking(c *fiber.Ctx) error {
 	return utils.SuccessResponse(c, fiber.StatusCreated, "Booking created - hourly charging started", response)
 }
 
-// UpdateBooking godoc
-// @Summary Update booking
-// @Description Update booking status or details
-// @Tags Booking
-// @Accept json
-// @Produce json
-// @Param id path string true "Booking UUID"
-// @Param booking body models.Booking true "Booking payload"
-// @Success 200 {object} utils.Response{data=models.Booking}
-// @Failure 400 {object} utils.Response
-// @Failure 401 {object} utils.Response
-// @Failure 404 {object} utils.Response
-// @Failure 500 {object} utils.Response
-// @Router /api/v1/bookings/{id} [put]
-func UpdateBooking(c *fiber.Ctx) error {
-	id := c.Params("id")
-
-	bookingID, err := uuid.Parse(id)
-	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Invalid UUID format", nil)
-	}
-
-	userIDStr := c.Locals("user_id").(string)
-
-	userID, err := uuid.Parse(userIDStr)
-	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusUnauthorized, "Invalid user id", nil)
-	}
-
-	var booking models.Booking
-
-	if err := config.DB.First(&booking, "id = ? AND user_id = ?", bookingID, userID).Error; err != nil {
-
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return utils.ErrorResponse(c, fiber.StatusNotFound, "Booking not found", nil)
-		}
-
-		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to find booking", err.Error())
-	}
-
-	var input models.Booking
-
-	if err := c.BodyParser(&input); err != nil {
-		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Invalid request body", err.Error())
-	}
-
-	if input.Status == models.BookingCancelled || input.Status == models.BookingCompleted {
-
-		err := config.DB.Model(&models.ParkingSlot{}).
-			Where("id = ?", booking.SlotID).
-			Update("status", "available").Error
-
-		if err != nil {
-			return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to update slot", err.Error())
-		}
-	}
-
-	if err := config.DB.Model(&booking).Updates(input).Error; err != nil {
-		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to update booking", err.Error())
-	}
-
-	return utils.SuccessResponse(c, fiber.StatusOK, "Booking updated successfully", booking)
-}
-
 // DeleteBooking godoc
 // @Summary Delete booking
 // @Description Delete booking by ID (owner only)
@@ -356,9 +292,9 @@ func DeleteBooking(c *fiber.Ctx) error {
 	return utils.SuccessResponse(c, fiber.StatusOK, "Booking deleted successfully", nil)
 }
 
-// CheckinBooking godoc
-// @Summary Check-in booking
-// @Description Mark booking as checked-in
+// ConfirmUserAtParkingForSuccessBooking godoc
+// @Summary Confirm user arrival at parking
+// @Description Confirm that user has arrived at parking location and calculate parking cost
 // @Tags Booking
 // @Accept json
 // @Produce json
@@ -368,7 +304,7 @@ func DeleteBooking(c *fiber.Ctx) error {
 // @Failure 404 {object} utils.Response
 // @Failure 500 {object} utils.Response
 // @Router /api/v1/bookings/{id}/checkin [post]
-func CheckinBooking(c *fiber.Ctx) error {
+func ConfirmUserAtParkingForSuccessBooking(c *fiber.Ctx) error {
 
 	id := c.Params("id")
 
@@ -384,20 +320,13 @@ func CheckinBooking(c *fiber.Ctx) error {
 	}
 
 	// check status
-	if booking.Status != models.BookingConfirmed {
-		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Booking not ready for checkin", nil)
+	if booking.Status != models.BookingPending {
+		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Booking status conflicting", nil)
 	}
 
 	now := time.Now()
 
-	// check grace time
-	expireTime := booking.BookedTimeStart.Add(time.Duration(booking.GraceMinutes) * time.Minute)
-
-	if now.After(expireTime) {
-		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Booking expired", nil)
-	}
-
-	booking.Status = models.BookingCheckedIn
+	booking.Status = models.BookingArrived
 
 	// Calculate duration and cost
 	durationHours := now.Sub(booking.BookedTimeStart).Hours()
@@ -413,9 +342,9 @@ func CheckinBooking(c *fiber.Ctx) error {
 	return utils.SuccessResponse(c, fiber.StatusOK, "Checkin successful", booking)
 }
 
-// CheckoutBooking godoc
-// @Summary Checkout booking
-// @Description Mark booking as completed and release slot
+// CompleteBookingPayment godoc
+// @Summary Complete booking payment
+// @Description Complete payment for arrived booking and mark as completed, release parking slot
 // @Tags Booking
 // @Accept json
 // @Produce json
@@ -424,8 +353,8 @@ func CheckinBooking(c *fiber.Ctx) error {
 // @Failure 400 {object} utils.Response
 // @Failure 404 {object} utils.Response
 // @Failure 500 {object} utils.Response
-// @Router /api/v1/bookings/{id}/checkout [post]
-func CheckoutBooking(c *fiber.Ctx) error {
+// @Router /api/v1/bookings/{id}/complete [post]
+func CompleteBookingPayment(c *fiber.Ctx) error {
 
 	id := c.Params("id")
 
@@ -441,37 +370,39 @@ func CheckoutBooking(c *fiber.Ctx) error {
 		return utils.ErrorResponse(c, fiber.StatusNotFound, "Booking not found", nil)
 	}
 
-	if booking.Status != models.BookingCheckedIn {
-		return utils.ErrorResponse(c, fiber.StatusBadRequest, "User not checked in", nil)
+	// check status - must be ARRIVED (waiting for payment)
+	if booking.Status != models.BookingArrived {
+		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Booking not ready for payment completion", nil)
 	}
-
-	booking.Status = models.BookingCompleted
 
 	tx := config.DB.Begin()
 
+	// update booking status to completed
+	booking.Status = models.BookingCompleted
+
 	if err := tx.Save(&booking).Error; err != nil {
 		tx.Rollback()
-		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Checkout failed", err.Error())
+		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Payment completion failed", err.Error())
 	}
 
-	// release slot
+	// release parking slot
 	err = tx.Model(&models.ParkingSlot{}).
 		Where("id = ?", booking.SlotID).
 		Update("status", "available").Error
 
 	if err != nil {
 		tx.Rollback()
-		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Slot update failed", err.Error())
+		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to release parking slot", err.Error())
 	}
 
 	tx.Commit()
 
-	return utils.SuccessResponse(c, fiber.StatusOK, "Checkout successful", booking)
+	return utils.SuccessResponse(c, fiber.StatusOK, "Payment completed successfully", booking)
 }
 
 // CancelBooking godoc
 // @Summary Cancel booking
-// @Description Cancel confirmed booking and release slot
+// @Description Cancel pending booking and release slot
 // @Tags Booking
 // @Accept json
 // @Produce json
@@ -521,7 +452,7 @@ func CancelBooking(c *fiber.Ctx) error {
 	}
 
 	// check cancellable state
-	if booking.Status != models.BookingConfirmed {
+	if booking.Status != models.BookingPending {
 		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Booking cannot be cancelled", nil)
 	}
 

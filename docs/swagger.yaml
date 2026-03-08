@@ -6,14 +6,12 @@ definitions:
         type: string
       bookedTimeStart:
         type: string
-      checkinTime:
-        type: string
-      checkoutTime:
-        type: string
       createdAt:
         type: string
-      graceMinutes:
-        type: integer
+      duration_hours:
+        type: number
+      hourly_rate:
+        type: number
       id:
         type: string
       parking:
@@ -28,6 +26,8 @@ definitions:
         type: string
       status:
         $ref: '#/definitions/models.BookingStatus'
+      total_cost:
+        type: number
       updatedAt:
         type: string
       user:
@@ -41,8 +41,6 @@ definitions:
     type: object
   models.BookingRequest:
     properties:
-      booked_time_start:
-        type: string
       parking_id:
         type: string
       slot_id:
@@ -50,7 +48,6 @@ definitions:
       zone_id:
         type: string
     required:
-    - booked_time_start
     - parking_id
     - slot_id
     - zone_id
@@ -61,10 +58,10 @@ definitions:
         type: string
       booked_time_start:
         type: string
-      checkin_time:
-        type: string
-      checkout_time:
-        type: string
+      duration_hours:
+        type: number
+      hourly_rate:
+        type: number
       id:
         type: string
       parking:
@@ -73,25 +70,33 @@ definitions:
         $ref: '#/definitions/models.SlotInfo'
       status:
         $ref: '#/definitions/models.BookingStatus'
+      total_cost:
+        type: number
       zone:
         $ref: '#/definitions/models.ZoneInfo'
     type: object
   models.BookingStatus:
     enum:
     - PENDING
-    - CONFIRMED
-    - CHECKED_IN
+    - ARRIVED
     - COMPLETED
     - CANCELLED
-    - EXPIRED
     type: string
+    x-enum-comments:
+      BookingArrived: ถึงแล้วรอจ่ายตัง (Arrived and waiting to pay)
+      BookingCancelled: ยกเลิก (Cancelled)
+      BookingCompleted: เสร็จสิ้น (Completed)
+      BookingPending: จองอยู่ (Booking in progress)
+    x-enum-descriptions:
+    - จองอยู่ (Booking in progress)
+    - ถึงแล้วรอจ่ายตัง (Arrived and waiting to pay)
+    - เสร็จสิ้น (Completed)
+    - ยกเลิก (Cancelled)
     x-enum-varnames:
     - BookingPending
-    - BookingConfirmed
-    - BookingCheckedIn
+    - BookingArrived
     - BookingCompleted
     - BookingCancelled
-    - BookingExpired
   models.CreateParkingRequest:
     properties:
       address:
@@ -195,7 +200,7 @@ definitions:
         type: string
       zones:
         items:
-          $ref: '#/definitions/models.ZoneResponse'
+          $ref: '#/definitions/models.ZoneInfo'
         type: array
     type: object
   models.ParkingInfo:
@@ -475,13 +480,6 @@ definitions:
       name:
         type: string
     type: object
-  models.ZoneResponse:
-    properties:
-      id:
-        type: string
-      name:
-        type: string
-    type: object
   utils.Response:
     properties:
       data: {}
@@ -665,58 +663,11 @@ paths:
       summary: Get booking
       tags:
       - Booking
-    put:
-      consumes:
-      - application/json
-      description: Update booking status or details
-      parameters:
-      - description: Booking UUID
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: Booking payload
-        in: body
-        name: booking
-        required: true
-        schema:
-          $ref: '#/definitions/models.Booking'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/utils.Response'
-            - properties:
-                data:
-                  $ref: '#/definitions/models.Booking'
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/utils.Response'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/utils.Response'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/utils.Response'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/utils.Response'
-      summary: Update booking
-      tags:
-      - Booking
   /api/v1/bookings/{id}/cancel:
     post:
       consumes:
       - application/json
-      description: Cancel confirmed booking and release slot
+      description: Cancel pending booking and release slot
       parameters:
       - description: Booking UUID
         in: path
@@ -757,7 +708,8 @@ paths:
     post:
       consumes:
       - application/json
-      description: Mark booking as checked-in
+      description: Confirm that user has arrived at parking location and calculate
+        parking cost
       parameters:
       - description: Booking UUID
         in: path
@@ -788,14 +740,15 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/utils.Response'
-      summary: Check-in booking
+      summary: Confirm user arrival at parking
       tags:
       - Booking
-  /api/v1/bookings/{id}/checkout:
+  /api/v1/bookings/{id}/complete:
     post:
       consumes:
       - application/json
-      description: Mark booking as completed and release slot
+      description: Complete payment for arrived booking and mark as completed, release
+        parking slot
       parameters:
       - description: Booking UUID
         in: path
@@ -826,7 +779,7 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/utils.Response'
-      summary: Checkout booking
+      summary: Complete booking payment
       tags:
       - Booking
   /api/v1/bookings/history:
@@ -1084,6 +1037,34 @@ paths:
       tags:
       - ParkingSlot
   /api/v1/profile:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a profile by UUID
+      parameters:
+      - description: Profile UUID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Delete profile
+      tags:
+      - Profile
     get:
       consumes:
       - application/json
@@ -1173,35 +1154,6 @@ paths:
           schema:
             $ref: '#/definitions/utils.Response'
       summary: Update profile
-      tags:
-      - Profile
-  /api/v1/profile/{id}:
-    delete:
-      consumes:
-      - application/json
-      description: Delete a profile by UUID
-      parameters:
-      - description: Profile UUID
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/utils.Response'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/utils.Response'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/utils.Response'
-      summary: Delete profile
       tags:
       - Profile
   /api/v1/profiles:

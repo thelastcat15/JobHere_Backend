@@ -15,7 +15,7 @@ type Booking struct {
 	ZoneID    uuid.UUID `gorm:"type:uuid;not null;index"`
 	SlotID    uuid.UUID `gorm:"type:uuid;not null;index"`
 
-	Status BookingStatus `gorm:"type:varchar(30);not null;default:'PENDING';index;check:status IN ('PENDING','CONFIRMED','CHECKED_IN','COMPLETED','CANCELLED','EXPIRED')"`
+	Status BookingStatus `gorm:"type:varchar(30);not null;default:'PENDING';index;check:status IN ('PENDING','ARRIVED','COMPLETED','CANCELLED')"`
 
 	BookedTimeStart time.Time `gorm:"not null"`
 	BookedTimeEnd   time.Time `gorm:"not null"`
@@ -23,8 +23,6 @@ type Booking struct {
 	HourlyRate    float64 `gorm:"type:numeric(10,2);not null;default:0" json:"hourly_rate"`
 	DurationHours float64 `gorm:"type:numeric(8,2);default:0" json:"duration_hours"`
 	TotalCost     float64 `gorm:"type:numeric(10,2);default:0" json:"total_cost"`
-
-	GraceMinutes int `gorm:"default:60"`
 
 	CreatedAt time.Time
 	UpdatedAt time.Time

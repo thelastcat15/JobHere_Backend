@@ -274,81 +274,6 @@ const docTemplate = `{
                     }
                 }
             },
-            "put": {
-                "description": "Update booking status or details",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Booking"
-                ],
-                "summary": "Update booking",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Booking UUID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Booking payload",
-                        "name": "booking",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.Booking"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/utils.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/models.Booking"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/utils.Response"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/utils.Response"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/utils.Response"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/utils.Response"
-                        }
-                    }
-                }
-            },
             "delete": {
                 "description": "Delete booking by ID (owner only)",
                 "consumes": [
@@ -406,7 +331,7 @@ const docTemplate = `{
         },
         "/api/v1/bookings/{id}/cancel": {
             "post": {
-                "description": "Cancel confirmed booking and release slot",
+                "description": "Cancel pending booking and release slot",
                 "consumes": [
                     "application/json"
                 ],
@@ -468,7 +393,7 @@ const docTemplate = `{
         },
         "/api/v1/bookings/{id}/checkin": {
             "post": {
-                "description": "Mark booking as checked-in",
+                "description": "Confirm that user has arrived at parking location and calculate parking cost",
                 "consumes": [
                     "application/json"
                 ],
@@ -478,7 +403,7 @@ const docTemplate = `{
                 "tags": [
                     "Booking"
                 ],
-                "summary": "Check-in booking",
+                "summary": "Confirm user arrival at parking",
                 "parameters": [
                     {
                         "type": "string",
@@ -528,9 +453,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/bookings/{id}/checkout": {
+        "/api/v1/bookings/{id}/complete": {
             "post": {
-                "description": "Mark booking as completed and release slot",
+                "description": "Complete payment for arrived booking and mark as completed, release parking slot",
                 "consumes": [
                     "application/json"
                 ],
@@ -540,7 +465,7 @@ const docTemplate = `{
                 "tags": [
                     "Booking"
                 ],
-                "summary": "Checkout booking",
+                "summary": "Complete booking payment",
                 "parameters": [
                     {
                         "type": "string",
@@ -1106,9 +1031,7 @@ const docTemplate = `{
                         }
                     }
                 }
-            }
-        },
-        "/api/v1/profile/{id}": {
+            },
             "delete": {
                 "description": "Delete a profile by UUID",
                 "consumes": [
@@ -1245,17 +1168,14 @@ const docTemplate = `{
                 "bookedTimeStart": {
                     "type": "string"
                 },
-                "checkinTime": {
-                    "type": "string"
-                },
-                "checkoutTime": {
-                    "type": "string"
-                },
                 "createdAt": {
                     "type": "string"
                 },
-                "graceMinutes": {
-                    "type": "integer"
+                "duration_hours": {
+                    "type": "number"
+                },
+                "hourly_rate": {
+                    "type": "number"
                 },
                 "id": {
                     "type": "string"
@@ -1277,6 +1197,9 @@ const docTemplate = `{
                 },
                 "status": {
                     "$ref": "#/definitions/models.BookingStatus"
+                },
+                "total_cost": {
+                    "type": "number"
                 },
                 "updatedAt": {
                     "type": "string"
@@ -1300,15 +1223,11 @@ const docTemplate = `{
         "models.BookingRequest": {
             "type": "object",
             "required": [
-                "booked_time_start",
                 "parking_id",
                 "slot_id",
                 "zone_id"
             ],
             "properties": {
-                "booked_time_start": {
-                    "type": "string"
-                },
                 "parking_id": {
                     "type": "string"
                 },
@@ -1329,11 +1248,11 @@ const docTemplate = `{
                 "booked_time_start": {
                     "type": "string"
                 },
-                "checkin_time": {
-                    "type": "string"
+                "duration_hours": {
+                    "type": "number"
                 },
-                "checkout_time": {
-                    "type": "string"
+                "hourly_rate": {
+                    "type": "number"
                 },
                 "id": {
                     "type": "string"
@@ -1347,6 +1266,9 @@ const docTemplate = `{
                 "status": {
                     "$ref": "#/definitions/models.BookingStatus"
                 },
+                "total_cost": {
+                    "type": "number"
+                },
                 "zone": {
                     "$ref": "#/definitions/models.ZoneInfo"
                 }
@@ -1356,19 +1278,27 @@ const docTemplate = `{
             "type": "string",
             "enum": [
                 "PENDING",
-                "CONFIRMED",
-                "CHECKED_IN",
+                "ARRIVED",
                 "COMPLETED",
-                "CANCELLED",
-                "EXPIRED"
+                "CANCELLED"
+            ],
+            "x-enum-comments": {
+                "BookingArrived": "ถึงแล้วรอจ่ายตัง (Arrived and waiting to pay)",
+                "BookingCancelled": "ยกเลิก (Cancelled)",
+                "BookingCompleted": "เสร็จสิ้น (Completed)",
+                "BookingPending": "จองอยู่ (Booking in progress)"
+            },
+            "x-enum-descriptions": [
+                "จองอยู่ (Booking in progress)",
+                "ถึงแล้วรอจ่ายตัง (Arrived and waiting to pay)",
+                "เสร็จสิ้น (Completed)",
+                "ยกเลิก (Cancelled)"
             ],
             "x-enum-varnames": [
                 "BookingPending",
-                "BookingConfirmed",
-                "BookingCheckedIn",
+                "BookingArrived",
                 "BookingCompleted",
-                "BookingCancelled",
-                "BookingExpired"
+                "BookingCancelled"
             ]
         },
         "models.CreateParkingRequest": {
@@ -1517,7 +1447,7 @@ const docTemplate = `{
                 "zones": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/models.ZoneResponse"
+                        "$ref": "#/definitions/models.ZoneInfo"
                     }
                 }
             }
@@ -1934,17 +1864,6 @@ const docTemplate = `{
                 "hour_rate": {
                     "type": "number"
                 },
-                "id": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.ZoneResponse": {
-            "type": "object",
-            "properties": {
                 "id": {
                     "type": "string"
                 },
