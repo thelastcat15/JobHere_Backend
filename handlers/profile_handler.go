@@ -19,8 +19,8 @@ import (
 // @Accept json
 // @Produce json
 // @Param profile body models.Profile true "Profile payload"
-// @Success 201 {object} models.Profile
-// @Failure 400 {object} map[string]interface{}
+// @Success 201 {object} utils.Response{data=models.Profile}
+// @Failure 400 {object} utils.Response
 // @Router /api/v1/profile [post]
 func CreateProfile(c *fiber.Ctx) error {
 	var profile models.Profile
@@ -51,9 +51,9 @@ func CreateProfile(c *fiber.Ctx) error {
 // @Tags Profile
 // @Accept json
 // @Produce json
-// @Success 200 {object} models.Profile
-// @Failure 400 {object} map[string]interface{}
-// @Failure 404 {object} map[string]interface{}
+// @Success 200 {object} utils.Response{data=models.Profile}
+// @Failure 400 {object} utils.Response
+// @Failure 404 {object} utils.Response
 // @Router /api/v1/profile [get]
 func GetProfile(c *fiber.Ctx) error {
 	uid, err := uuid.Parse(c.Locals("user_id").(string))
@@ -82,9 +82,9 @@ func GetProfile(c *fiber.Ctx) error {
 // @Produce json
 // @Param page query int false "Page number"
 // @Param page_size query int false "Page size"
-// @Success 200 {array} models.Profile
-// @Failure 500 {object} map[string]interface{}
-// @Router /api/v1/profile [get]
+// @Success 200 {object} utils.Response{data=[]models.Profile}
+// @Failure 500 {object} utils.Response
+// @Router /api/v1/profiles [get]
 func ListProfile(c *fiber.Ctx) error {
 	page, _ := strconv.Atoi(c.Query("page", "1"))
 	pageSize, _ := strconv.Atoi(c.Query("page_size", "10"))
@@ -132,9 +132,9 @@ func ListProfile(c *fiber.Ctx) error {
 // @Accept json
 // @Produce json
 // @Param profile body models.Profile true "Profile payload"
-// @Success 200 {object} models.Profile
-// @Failure 400 {object} map[string]interface{}
-// @Failure 404 {object} map[string]interface{}
+// @Success 200 {object} utils.Response{data=models.Profile}
+// @Failure 400 {object} utils.Response
+// @Failure 404 {object} utils.Response
 // @Router /api/v1/profile [put]
 func UpdateProfile(c *fiber.Ctx) error {
 	uidStr, ok := c.Locals("user_id").(string)
@@ -186,9 +186,9 @@ func UpdateProfile(c *fiber.Ctx) error {
 // @Accept json
 // @Produce json
 // @Param id path string true "Profile UUID"
-// @Success 200 {object} map[string]interface{}
-// @Failure 400 {object} map[string]interface{}
-// @Failure 404 {object} map[string]interface{}
+// @Success 200 {object} utils.Response
+// @Failure 400 {object} utils.Response
+// @Failure 404 {object} utils.Response
 // @Router /api/v1/profile/{id} [delete]
 func DeleteProfile(c *fiber.Ctx) error {
 	id := c.Params("id")

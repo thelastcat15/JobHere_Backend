@@ -14,8 +14,9 @@ type BookingResponse struct {
 	BookedTimeStart time.Time `json:"booked_time_start"`
 	BookedTimeEnd   time.Time `json:"booked_time_end"`
 
-	CheckinTime  *time.Time `json:"checkin_time,omitempty"`
-	CheckoutTime *time.Time `json:"checkout_time,omitempty"`
+	HourlyRate    float64 `json:"hourly_rate"`
+	DurationHours float64 `json:"duration_hours,omitempty"`
+	TotalCost     float64 `json:"total_cost,omitempty"`
 
 	Parking ParkingInfo `json:"parking"`
 	Zone    ZoneInfo    `json:"zone"`
@@ -28,8 +29,9 @@ type ParkingInfo struct {
 }
 
 type ZoneInfo struct {
-	ID   uuid.UUID `json:"id"`
-	Name string    `json:"name"`
+	ID       uuid.UUID `json:"id"`
+	Name     string    `json:"name"`
+	HourRate float64   `json:"hour_rate"`
 }
 
 type SlotInfo struct {
@@ -45,17 +47,19 @@ type BookingRow struct {
 	BookedTimeStart time.Time
 	BookedTimeEnd   time.Time
 
-	CheckinTime  *time.Time
-	CheckoutTime *time.Time
-
 	ParkingID   uuid.UUID
 	ParkingName string
 
-	ZoneID   uuid.UUID
-	ZoneName string
+	ZoneID       uuid.UUID
+	ZoneName     string
+	ZoneHourRate float64
 
 	SlotID   uuid.UUID
 	SlotName string
+
+	HourlyRate    float64
+	DurationHours float64
+	TotalCost     float64
 }
 
 func MapBookingRowToResponse(r BookingRow) BookingResponse {
@@ -64,8 +68,6 @@ func MapBookingRowToResponse(r BookingRow) BookingResponse {
 		Status:          r.Status,
 		BookedTimeStart: r.BookedTimeStart,
 		BookedTimeEnd:   r.BookedTimeEnd,
-		CheckinTime:     r.CheckinTime,
-		CheckoutTime:    r.CheckoutTime,
 
 		Parking: ParkingInfo{
 			ID:   r.ParkingID,
@@ -73,13 +75,18 @@ func MapBookingRowToResponse(r BookingRow) BookingResponse {
 		},
 
 		Zone: ZoneInfo{
-			ID:   r.ZoneID,
-			Name: r.ZoneName,
+			ID:       r.ZoneID,
+			Name:     r.ZoneName,
+			HourRate: r.ZoneHourRate,
 		},
 
 		Slot: SlotInfo{
 			ID:   r.SlotID,
 			Name: r.SlotName,
 		},
+
+		HourlyRate:    r.HourlyRate,
+		DurationHours: r.DurationHours,
+		TotalCost:     r.TotalCost,
 	}
 }

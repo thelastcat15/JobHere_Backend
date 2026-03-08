@@ -39,9 +39,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/auth": {
+        "/api/v1/bookings": {
             "get": {
-                "description": "List auth records with pagination",
+                "description": "Retrieve all bookings for the authenticated user",
                 "consumes": [
                     "application/json"
                 ],
@@ -49,44 +49,47 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Auth"
+                    "Booking"
                 ],
-                "summary": "List auths",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Page number",
-                        "name": "page",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "Page size",
-                        "name": "page_size",
-                        "in": "query"
-                    }
-                ],
+                "summary": "Get user bookings",
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/models.Auth"
-                            }
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/models.BookingResponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/utils.Response"
                         }
                     }
                 }
             },
             "post": {
-                "description": "Create a new auth record",
+                "description": "Create a new parking slot booking (hourly rate charging starts immediately)",
                 "consumes": [
                     "application/json"
                 ],
@@ -94,17 +97,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Auth"
+                    "Booking"
                 ],
-                "summary": "Create Auth",
+                "summary": "Create booking",
                 "parameters": [
                     {
-                        "description": "Auth payload",
-                        "name": "auth",
+                        "description": "Booking request",
+                        "name": "booking",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.Auth"
+                            "$ref": "#/definitions/models.BookingRequest"
                         }
                     }
                 ],
@@ -112,22 +115,51 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/models.Auth"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.BookingResponse"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
                         }
                     }
                 }
             }
         },
-        "/api/v1/auth/{id}": {
+        "/api/v1/bookings/history": {
             "get": {
-                "description": "Retrieve an auth record by UUID",
+                "description": "Retrieve booking history for current user",
                 "consumes": [
                     "application/json"
                 ],
@@ -135,13 +167,63 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Auth"
+                    "Booking"
                 ],
-                "summary": "Get auth by ID",
+                "summary": "Get user booking history",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/models.BookingResponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/bookings/{id}": {
+            "get": {
+                "description": "Retrieve booking by ID (owner only)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Booking"
+                ],
+                "summary": "Get booking",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Auth UUID",
+                        "description": "Booking UUID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -151,27 +233,49 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.Auth"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.BookingResponse"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
                         }
                     }
                 }
             },
             "put": {
-                "description": "Update an auth record by UUID",
+                "description": "Update booking status or details",
                 "consumes": [
                     "application/json"
                 ],
@@ -179,24 +283,24 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Auth"
+                    "Booking"
                 ],
-                "summary": "Update an auth",
+                "summary": "Update booking",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Auth UUID",
+                        "description": "Booking UUID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "Auth payload",
-                        "name": "auth",
+                        "description": "Booking payload",
+                        "name": "booking",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.Auth"
+                            "$ref": "#/definitions/models.Booking"
                         }
                     }
                 ],
@@ -204,27 +308,49 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.Auth"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.Booking"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
                         }
                     }
                 }
             },
             "delete": {
-                "description": "Delete an auth record by UUID",
+                "description": "Delete booking by ID (owner only)",
                 "consumes": [
                     "application/json"
                 ],
@@ -232,13 +358,13 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Auth"
+                    "Booking"
                 ],
-                "summary": "Delete an auth",
+                "summary": "Delete booking",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Auth UUID",
+                        "description": "Booking UUID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -248,30 +374,39 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/utils.Response"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
                         }
                     }
                 }
             }
         },
-        "/api/v1/parking-zones": {
-            "get": {
-                "description": "List parking zones with optional filtering and pagination",
+        "/api/v1/bookings/{id}/cancel": {
+            "post": {
+                "description": "Cancel confirmed booking and release slot",
                 "consumes": [
                     "application/json"
                 ],
@@ -279,50 +414,478 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ParkingZone"
+                    "Booking"
                 ],
-                "summary": "List parking zones",
+                "summary": "Cancel booking",
                 "parameters": [
                     {
-                        "type": "integer",
-                        "description": "Page number",
-                        "name": "page",
-                        "in": "query"
+                        "type": "string",
+                        "description": "Booking UUID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
                     },
-                    {
-                        "type": "integer",
-                        "description": "Page size",
-                        "name": "page_size",
-                        "in": "query"
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/bookings/{id}/checkin": {
+            "post": {
+                "description": "Mark booking as checked-in",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Booking"
+                ],
+                "summary": "Check-in booking",
+                "parameters": [
                     {
                         "type": "string",
-                        "description": "Place UUID",
+                        "description": "Booking UUID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.Booking"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/bookings/{id}/checkout": {
+            "post": {
+                "description": "Mark booking as completed and release slot",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Booking"
+                ],
+                "summary": "Checkout booking",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Booking UUID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.Booking"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/parking": {
+            "get": {
+                "description": "Retrieve all parking locations with available slot count",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Parking"
+                ],
+                "summary": "List parking",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/models.ParkingResponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a new parking location",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Parking"
+                ],
+                "summary": "Create parking",
+                "parameters": [
+                    {
+                        "description": "Parking payload",
+                        "name": "parking",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.CreateParkingRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.Parking"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/parking/{id}": {
+            "put": {
+                "description": "Update parking information by UUID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Parking"
+                ],
+                "summary": "Update parking",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Parking UUID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Parking payload",
+                        "name": "parking",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.UpdateParkingRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.Parking"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete parking by UUID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Parking"
+                ],
+                "summary": "Delete parking",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Parking UUID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/parking/{parking_id}": {
+            "get": {
+                "description": "Retrieve parking details including zones and images",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Parking"
+                ],
+                "summary": "Get parking by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Parking UUID",
                         "name": "parking_id",
-                        "in": "query"
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/models.ParkingZone"
-                            }
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.ParkingDetailResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/utils.Response"
                         }
                     }
                 }
-            },
-            "post": {
-                "description": "Create a new parking zone",
+            }
+        },
+        "/api/v1/parking/{parking_id}/zones/{zone_id}/slots": {
+            "get": {
+                "description": "Retrieve all parking slots inside a specific zone",
                 "consumes": [
                     "application/json"
                 ],
@@ -330,17 +893,190 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ParkingZone"
+                    "ParkingSlot"
                 ],
-                "summary": "Create Parking Zone",
+                "summary": "Get parking slots",
                 "parameters": [
                     {
-                        "description": "ParkingZone payload",
-                        "name": "zone",
+                        "type": "string",
+                        "description": "Parking UUID",
+                        "name": "parking_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Zone UUID",
+                        "name": "zone_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/models.ParkingSlotResponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/profile": {
+            "get": {
+                "description": "Retrieve a profile record by UUID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Profile"
+                ],
+                "summary": "Get profile by UID",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.Profile"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update a profile by UUID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Profile"
+                ],
+                "summary": "Update profile",
+                "parameters": [
+                    {
+                        "description": "Profile payload",
+                        "name": "profile",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.ParkingZone"
+                            "$ref": "#/definitions/models.Profile"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.Profile"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a new profile record",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Profile"
+                ],
+                "summary": "Create Profile",
+                "parameters": [
+                    {
+                        "description": "Profile payload",
+                        "name": "profile",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Profile"
                         }
                     }
                 ],
@@ -348,119 +1084,33 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/models.ParkingZone"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.Profile"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/utils.Response"
                         }
                     }
                 }
             }
         },
-        "/api/v1/parking-zones/{id}": {
-            "get": {
-                "description": "Retrieve a parking zone by UUID",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "ParkingZone"
-                ],
-                "summary": "Get parking zone by ID",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "ParkingZone UUID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.ParkingZone"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    }
-                }
-            },
-            "put": {
-                "description": "Update a parking zone by UUID",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "ParkingZone"
-                ],
-                "summary": "Update a parking zone",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "ParkingZone UUID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "ParkingZone payload",
-                        "name": "zone",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.ParkingZone"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.ParkingZone"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    }
-                }
-            },
+        "/api/v1/profile/{id}": {
             "delete": {
-                "description": "Delete a parking zone by UUID",
+                "description": "Delete a profile by UUID",
                 "consumes": [
                     "application/json"
                 ],
@@ -468,13 +1118,13 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ParkingZone"
+                    "Profile"
                 ],
-                "summary": "Delete a parking zone",
+                "summary": "Delete profile",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "ParkingZone UUID",
+                        "description": "Profile UUID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -484,30 +1134,27 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/utils.Response"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/utils.Response"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/utils.Response"
                         }
                     }
                 }
             }
         },
-        "/api/v1/places": {
+        "/api/v1/profiles": {
             "get": {
-                "description": "List places with optional filtering and pagination",
+                "description": "List profiles with pagination",
                 "consumes": [
                     "application/json"
                 ],
@@ -515,9 +1162,9 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Place"
+                    "Profile"
                 ],
-                "summary": "List places",
+                "summary": "List profiles",
                 "parameters": [
                     {
                         "type": "integer",
@@ -530,212 +1177,34 @@ const docTemplate = `{
                         "description": "Page size",
                         "name": "page_size",
                         "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Place type",
-                        "name": "type",
-                        "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/models.Place"
-                            }
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/models.Profile"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    }
-                }
-            },
-            "post": {
-                "description": "Create a new place",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Place"
-                ],
-                "summary": "Create Place",
-                "parameters": [
-                    {
-                        "description": "Place payload",
-                        "name": "place",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.Place"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/models.Place"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/places/{id}": {
-            "get": {
-                "description": "Retrieve a place by UUID",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Place"
-                ],
-                "summary": "Get place by ID",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Place UUID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.Place"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    }
-                }
-            },
-            "put": {
-                "description": "Update a place by UUID",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Place"
-                ],
-                "summary": "Update a place",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Place UUID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Place payload",
-                        "name": "place",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.Place"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.Place"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "description": "Delete a place by UUID",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Place"
-                ],
-                "summary": "Delete a place",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Place UUID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/utils.Response"
                         }
                     }
                 }
@@ -767,91 +1236,34 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "models.Auth": {
-            "type": "object",
-            "required": [
-                "display_name",
-                "email"
-            ],
-            "properties": {
-                "bookings": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.Booking"
-                    }
-                },
-                "code_redeems": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.CodeRedeem"
-                    }
-                },
-                "created_at": {
-                    "type": "string"
-                },
-                "display_name": {
-                    "type": "string",
-                    "maxLength": 255,
-                    "minLength": 2
-                },
-                "email": {
-                    "type": "string"
-                },
-                "phone": {
-                    "type": "string"
-                },
-                "profile": {
-                    "description": "Relationships",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/models.Profile"
-                        }
-                    ]
-                },
-                "reports": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.Report"
-                    }
-                },
-                "reward_redeems": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.RewardRedeem"
-                    }
-                },
-                "rewards": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.Reward"
-                    }
-                },
-                "uid": {
-                    "type": "string"
-                },
-                "updated_at": {
-                    "type": "string"
-                }
-            }
-        },
         "models.Booking": {
             "type": "object",
-            "required": [
-                "booked_time_end",
-                "booked_time_start",
-                "status"
-            ],
             "properties": {
-                "booked_time_end": {
+                "bookedTimeEnd": {
                     "type": "string"
                 },
-                "booked_time_start": {
+                "bookedTimeStart": {
                     "type": "string"
                 },
-                "created_at": {
+                "checkinTime": {
                     "type": "string"
+                },
+                "checkoutTime": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "graceMinutes": {
+                    "type": "integer"
                 },
                 "id": {
+                    "type": "string"
+                },
+                "parking": {
+                    "$ref": "#/definitions/models.Parking"
+                },
+                "parkingID": {
                     "type": "string"
                 },
                 "parking_slot": {
@@ -860,8 +1272,42 @@ const docTemplate = `{
                 "parking_zone": {
                     "$ref": "#/definitions/models.ParkingZone"
                 },
-                "place": {
-                    "$ref": "#/definitions/models.Place"
+                "slotID": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/models.BookingStatus"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "user": {
+                    "description": "Relationships",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.Profile"
+                        }
+                    ]
+                },
+                "userID": {
+                    "type": "string"
+                },
+                "zoneID": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.BookingRequest": {
+            "type": "object",
+            "required": [
+                "booked_time_start",
+                "parking_id",
+                "slot_id",
+                "zone_id"
+            ],
+            "properties": {
+                "booked_time_start": {
+                    "type": "string"
                 },
                 "parking_id": {
                     "type": "string"
@@ -869,74 +1315,252 @@ const docTemplate = `{
                 "slot_id": {
                     "type": "string"
                 },
-                "status": {
-                    "enum": [
-                        "CONFIRMED",
-                        "COMPLETED",
-                        "CANCELLED"
-                    ],
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/models.BookingStatus"
-                        }
-                    ]
-                },
-                "updated_at": {
-                    "type": "string"
-                },
-                "user": {
-                    "description": "Relationships",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/models.Auth"
-                        }
-                    ]
-                },
-                "user_id": {
-                    "type": "string"
-                },
                 "zone_id": {
                     "type": "string"
+                }
+            }
+        },
+        "models.BookingResponse": {
+            "type": "object",
+            "properties": {
+                "booked_time_end": {
+                    "type": "string"
+                },
+                "booked_time_start": {
+                    "type": "string"
+                },
+                "checkin_time": {
+                    "type": "string"
+                },
+                "checkout_time": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "parking": {
+                    "$ref": "#/definitions/models.ParkingInfo"
+                },
+                "slot": {
+                    "$ref": "#/definitions/models.SlotInfo"
+                },
+                "status": {
+                    "$ref": "#/definitions/models.BookingStatus"
+                },
+                "zone": {
+                    "$ref": "#/definitions/models.ZoneInfo"
                 }
             }
         },
         "models.BookingStatus": {
             "type": "string",
             "enum": [
+                "PENDING",
                 "CONFIRMED",
+                "CHECKED_IN",
                 "COMPLETED",
-                "CANCELLED"
+                "CANCELLED",
+                "EXPIRED"
             ],
             "x-enum-varnames": [
+                "BookingPending",
                 "BookingConfirmed",
+                "BookingCheckedIn",
                 "BookingCompleted",
-                "BookingCancelled"
+                "BookingCancelled",
+                "BookingExpired"
             ]
         },
-        "models.CodeRedeem": {
+        "models.CreateParkingRequest": {
             "type": "object",
+            "required": [
+                "address",
+                "coordinate_x",
+                "coordinate_y",
+                "name",
+                "type"
+            ],
             "properties": {
+                "address": {
+                    "type": "string",
+                    "maxLength": 500,
+                    "minLength": 5
+                },
+                "contact": {
+                    "type": "string",
+                    "maxLength": 100
+                },
+                "coordinate_x": {
+                    "type": "number"
+                },
+                "coordinate_y": {
+                    "type": "number"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 150
+                },
+                "type": {
+                    "type": "string",
+                    "maxLength": 50
+                }
+            }
+        },
+        "models.Parking": {
+            "type": "object",
+            "required": [
+                "address",
+                "coordinate_x",
+                "coordinate_y",
+                "name",
+                "type"
+            ],
+            "properties": {
+                "address": {
+                    "type": "string",
+                    "maxLength": 500,
+                    "minLength": 5
+                },
+                "bookings": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Booking"
+                    }
+                },
+                "contact": {
+                    "type": "string",
+                    "maxLength": 100
+                },
+                "coordinate_x": {
+                    "type": "number"
+                },
+                "coordinate_y": {
+                    "type": "number"
+                },
                 "created_at": {
+                    "type": "string"
+                },
+                "description": {
                     "type": "string"
                 },
                 "id": {
                     "type": "string"
                 },
+                "images": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.PlaceImage"
+                    }
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 150
+                },
+                "parking_zones": {
+                    "description": "Relationships",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.ParkingZone"
+                    }
+                },
+                "reports": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Report"
+                    }
+                },
                 "type": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 50
                 },
                 "updated_at": {
                     "type": "string"
+                }
+            }
+        },
+        "models.ParkingDetailResponse": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string"
                 },
-                "user": {
-                    "description": "Relationship",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/models.Auth"
-                        }
-                    ]
+                "contact": {
+                    "type": "string"
                 },
-                "user_id": {
+                "coordinate_x": {
+                    "type": "number"
+                },
+                "coordinate_y": {
+                    "type": "number"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "images": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.PlaceImage"
+                    }
+                },
+                "name": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "zones": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.ZoneResponse"
+                    }
+                }
+            }
+        },
+        "models.ParkingInfo": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.ParkingResponse": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "available_slots": {
+                    "type": "integer"
+                },
+                "contact": {
+                    "type": "string"
+                },
+                "coordinate_x": {
+                    "type": "number"
+                },
+                "coordinate_y": {
+                    "type": "number"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "type": {
                     "type": "string"
                 }
             }
@@ -944,7 +1568,8 @@ const docTemplate = `{
         "models.ParkingSlot": {
             "type": "object",
             "required": [
-                "name"
+                "name",
+                "status"
             ],
             "properties": {
                 "bookings": {
@@ -983,7 +1608,32 @@ const docTemplate = `{
                         "$ref": "#/definitions/models.Sensor"
                     }
                 },
+                "status": {
+                    "type": "string",
+                    "enum": [
+                        "available",
+                        "occupied",
+                        "reserved"
+                    ]
+                },
                 "updated_at": {
+                    "type": "string"
+                },
+                "zoneID": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.ParkingSlotResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "status": {
                     "type": "string"
                 },
                 "zone_id": {
@@ -1008,8 +1658,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "hour_rate": {
-                    "type": "number",
-                    "minimum": 0
+                    "type": "number"
                 },
                 "id": {
                     "type": "string"
@@ -1018,84 +1667,21 @@ const docTemplate = `{
                     "type": "string",
                     "maxLength": 100
                 },
-                "parking_slots": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.ParkingSlot"
-                    }
-                },
-                "place": {
+                "parking": {
                     "description": "Relationships",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/models.Place"
+                            "$ref": "#/definitions/models.Parking"
                         }
                     ]
                 },
                 "parking_id": {
                     "type": "string"
                 },
-                "reports": {
+                "parking_slots": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/models.Report"
-                    }
-                },
-                "updated_at": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.Place": {
-            "type": "object",
-            "required": [
-                "address",
-                "coordinate_x",
-                "coordinate_y",
-                "type"
-            ],
-            "properties": {
-                "address": {
-                    "type": "string",
-                    "maxLength": 500,
-                    "minLength": 5
-                },
-                "bookings": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.Booking"
-                    }
-                },
-                "contact": {
-                    "type": "string",
-                    "maxLength": 100
-                },
-                "coordinate_x": {
-                    "type": "string"
-                },
-                "coordinate_y": {
-                    "type": "string"
-                },
-                "created_at": {
-                    "type": "string"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "images": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.PlaceImage"
-                    }
-                },
-                "parking_zones": {
-                    "description": "Relationships",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.ParkingZone"
+                        "$ref": "#/definitions/models.ParkingSlot"
                     }
                 },
                 "reports": {
@@ -1103,10 +1689,6 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/models.Report"
                     }
-                },
-                "type": {
-                    "type": "string",
-                    "maxLength": 50
                 },
                 "updated_at": {
                     "type": "string"
@@ -1125,20 +1707,20 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
-                "path": {
-                    "type": "string",
-                    "maxLength": 500
-                },
-                "place": {
+                "parking": {
                     "description": "Relationship",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/models.Place"
+                            "$ref": "#/definitions/models.Parking"
                         }
                     ]
                 },
                 "parking_id": {
                     "type": "string"
+                },
+                "path": {
+                    "type": "string",
+                    "maxLength": 500
                 },
                 "updated_at": {
                     "type": "string"
@@ -1147,16 +1729,18 @@ const docTemplate = `{
         },
         "models.Profile": {
             "type": "object",
+            "required": [
+                "display_name",
+                "email"
+            ],
             "properties": {
-                "auth": {
-                    "description": "Relationship",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/models.Auth"
-                        }
-                    ]
-                },
                 "created_at": {
+                    "type": "string"
+                },
+                "display_name": {
+                    "type": "string"
+                },
+                "email": {
                     "type": "string"
                 },
                 "phone": {
@@ -1164,6 +1748,14 @@ const docTemplate = `{
                 },
                 "point": {
                     "type": "integer"
+                },
+                "role": {
+                    "type": "string",
+                    "enum": [
+                        "user",
+                        "admin",
+                        "guard"
+                    ]
                 },
                 "uid": {
                     "type": "string"
@@ -1195,17 +1787,17 @@ const docTemplate = `{
                     "type": "string",
                     "maxLength": 500
                 },
+                "parking": {
+                    "$ref": "#/definitions/models.Parking"
+                },
+                "parking_id": {
+                    "type": "string"
+                },
                 "parking_slot": {
                     "$ref": "#/definitions/models.ParkingSlot"
                 },
                 "parking_zone": {
                     "$ref": "#/definitions/models.ParkingZone"
-                },
-                "place": {
-                    "$ref": "#/definitions/models.Place"
-                },
-                "parking_id": {
-                    "type": "string"
                 },
                 "slot_id": {
                     "type": "string"
@@ -1232,7 +1824,7 @@ const docTemplate = `{
                     "description": "Relationships",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/models.Auth"
+                            "$ref": "#/definitions/models.Profile"
                         }
                     ]
                 },
@@ -1256,71 +1848,6 @@ const docTemplate = `{
                 "ReportApproved",
                 "ReportRejected"
             ]
-        },
-        "models.Reward": {
-            "type": "object",
-            "properties": {
-                "created_at": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "reward_redeems": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.RewardRedeem"
-                    }
-                },
-                "type": {
-                    "type": "string"
-                },
-                "updated_at": {
-                    "type": "string"
-                },
-                "user": {
-                    "description": "Relationship",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/models.Auth"
-                        }
-                    ]
-                },
-                "user_id": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.RewardRedeem": {
-            "type": "object",
-            "properties": {
-                "created_at": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "reward": {
-                    "description": "Relationships",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/models.Reward"
-                        }
-                    ]
-                },
-                "reward_id": {
-                    "type": "string"
-                },
-                "updated_at": {
-                    "type": "string"
-                },
-                "user": {
-                    "$ref": "#/definitions/models.Auth"
-                },
-                "user_id": {
-                    "type": "string"
-                }
-            }
         },
         "models.Sensor": {
             "type": "object",
@@ -1356,6 +1883,86 @@ const docTemplate = `{
                 "url": {
                     "type": "string",
                     "maxLength": 500
+                }
+            }
+        },
+        "models.SlotInfo": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.UpdateParkingRequest": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string",
+                    "maxLength": 500,
+                    "minLength": 5
+                },
+                "contact": {
+                    "type": "string",
+                    "maxLength": 100
+                },
+                "coordinate_x": {
+                    "type": "number"
+                },
+                "coordinate_y": {
+                    "type": "number"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 150
+                },
+                "type": {
+                    "type": "string",
+                    "maxLength": 50
+                }
+            }
+        },
+        "models.ZoneInfo": {
+            "type": "object",
+            "properties": {
+                "hour_rate": {
+                    "type": "number"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.ZoneResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "utils.Response": {
+            "type": "object",
+            "properties": {
+                "data": {},
+                "error": {},
+                "message": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "integer"
                 }
             }
         }

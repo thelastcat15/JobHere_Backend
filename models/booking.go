@@ -20,8 +20,9 @@ type Booking struct {
 	BookedTimeStart time.Time `gorm:"not null"`
 	BookedTimeEnd   time.Time `gorm:"not null"`
 
-	CheckinTime  *time.Time
-	CheckoutTime *time.Time
+	HourlyRate    float64 `gorm:"type:numeric(10,2);not null;default:0" json:"hourly_rate"`
+	DurationHours float64 `gorm:"type:numeric(8,2);default:0" json:"duration_hours"`
+	TotalCost     float64 `gorm:"type:numeric(10,2);default:0" json:"total_cost"`
 
 	GraceMinutes int `gorm:"default:60"`
 

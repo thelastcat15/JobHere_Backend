@@ -21,8 +21,3 @@ type ParkingZone struct {
 	Bookings     []Booking     `gorm:"foreignKey:ZoneID" json:"bookings,omitempty"`
 	Reports      []Report      `gorm:"foreignKey:ZoneID" json:"reports,omitempty"`
 }
-
-type ZoneResponse struct {
-	ID   uuid.UUID `json:"id"`
-	Name string    `json:"name"`
-}

@@ -1,116 +1,229 @@
 basePath: /api
 definitions:
-  models.Auth:
+  models.Booking:
     properties:
-      bookings:
-        items:
-          $ref: '#/definitions/models.Booking'
-        type: array
-      code_redeems:
-        items:
-          $ref: '#/definitions/models.CodeRedeem'
-        type: array
-      created_at:
+      bookedTimeEnd:
         type: string
-      display_name:
-        maxLength: 255
-        minLength: 2
+      bookedTimeStart:
         type: string
-      email:
+      checkinTime:
         type: string
-      phone:
+      checkoutTime:
         type: string
-      profile:
+      createdAt:
+        type: string
+      graceMinutes:
+        type: integer
+      id:
+        type: string
+      parking:
+        $ref: '#/definitions/models.Parking'
+      parking_slot:
+        $ref: '#/definitions/models.ParkingSlot'
+      parking_zone:
+        $ref: '#/definitions/models.ParkingZone'
+      parkingID:
+        type: string
+      slotID:
+        type: string
+      status:
+        $ref: '#/definitions/models.BookingStatus'
+      updatedAt:
+        type: string
+      user:
         allOf:
         - $ref: '#/definitions/models.Profile'
         description: Relationships
-      reports:
-        items:
-          $ref: '#/definitions/models.Report'
-        type: array
-      reward_redeems:
-        items:
-          $ref: '#/definitions/models.RewardRedeem'
-        type: array
-      rewards:
-        items:
-          $ref: '#/definitions/models.Reward'
-        type: array
-      uid:
+      userID:
         type: string
-      updated_at:
+      zoneID:
+        type: string
+    type: object
+  models.BookingRequest:
+    properties:
+      booked_time_start:
+        type: string
+      parking_id:
+        type: string
+      slot_id:
+        type: string
+      zone_id:
         type: string
     required:
-    - display_name
-    - email
+    - booked_time_start
+    - parking_id
+    - slot_id
+    - zone_id
     type: object
-  models.Booking:
+  models.BookingResponse:
     properties:
       booked_time_end:
         type: string
       booked_time_start:
         type: string
-      created_at:
+      checkin_time:
+        type: string
+      checkout_time:
         type: string
       id:
         type: string
-      parking_slot:
-        $ref: '#/definitions/models.ParkingSlot'
-      parking_zone:
-        $ref: '#/definitions/models.ParkingZone'
-      place:
-        $ref: '#/definitions/models.Place'
-      parking_id:
-        type: string
-      slot_id:
-        type: string
+      parking:
+        $ref: '#/definitions/models.ParkingInfo'
+      slot:
+        $ref: '#/definitions/models.SlotInfo'
       status:
-        allOf:
-        - $ref: '#/definitions/models.BookingStatus'
-        enum:
-        - CONFIRMED
-        - COMPLETED
-        - CANCELLED
-      updated_at:
-        type: string
-      user:
-        allOf:
-        - $ref: '#/definitions/models.Auth'
-        description: Relationships
-      user_id:
-        type: string
-      zone_id:
-        type: string
-    required:
-    - booked_time_end
-    - booked_time_start
-    - status
+        $ref: '#/definitions/models.BookingStatus'
+      zone:
+        $ref: '#/definitions/models.ZoneInfo'
     type: object
   models.BookingStatus:
     enum:
+    - PENDING
     - CONFIRMED
+    - CHECKED_IN
     - COMPLETED
     - CANCELLED
+    - EXPIRED
     type: string
     x-enum-varnames:
+    - BookingPending
     - BookingConfirmed
+    - BookingCheckedIn
     - BookingCompleted
     - BookingCancelled
-  models.CodeRedeem:
+    - BookingExpired
+  models.CreateParkingRequest:
     properties:
+      address:
+        maxLength: 500
+        minLength: 5
+        type: string
+      contact:
+        maxLength: 100
+        type: string
+      coordinate_x:
+        type: number
+      coordinate_y:
+        type: number
+      description:
+        type: string
+      name:
+        maxLength: 150
+        type: string
+      type:
+        maxLength: 50
+        type: string
+    required:
+    - address
+    - coordinate_x
+    - coordinate_y
+    - name
+    - type
+    type: object
+  models.Parking:
+    properties:
+      address:
+        maxLength: 500
+        minLength: 5
+        type: string
+      bookings:
+        items:
+          $ref: '#/definitions/models.Booking'
+        type: array
+      contact:
+        maxLength: 100
+        type: string
+      coordinate_x:
+        type: number
+      coordinate_y:
+        type: number
       created_at:
+        type: string
+      description:
         type: string
       id:
         type: string
+      images:
+        items:
+          $ref: '#/definitions/models.PlaceImage'
+        type: array
+      name:
+        maxLength: 150
+        type: string
+      parking_zones:
+        description: Relationships
+        items:
+          $ref: '#/definitions/models.ParkingZone'
+        type: array
+      reports:
+        items:
+          $ref: '#/definitions/models.Report'
+        type: array
       type:
+        maxLength: 50
         type: string
       updated_at:
         type: string
-      user:
-        allOf:
-        - $ref: '#/definitions/models.Auth'
-        description: Relationship
-      user_id:
+    required:
+    - address
+    - coordinate_x
+    - coordinate_y
+    - name
+    - type
+    type: object
+  models.ParkingDetailResponse:
+    properties:
+      address:
+        type: string
+      contact:
+        type: string
+      coordinate_x:
+        type: number
+      coordinate_y:
+        type: number
+      description:
+        type: string
+      id:
+        type: string
+      images:
+        items:
+          $ref: '#/definitions/models.PlaceImage'
+        type: array
+      name:
+        type: string
+      type:
+        type: string
+      zones:
+        items:
+          $ref: '#/definitions/models.ZoneResponse'
+        type: array
+    type: object
+  models.ParkingInfo:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+    type: object
+  models.ParkingResponse:
+    properties:
+      address:
+        type: string
+      available_slots:
+        type: integer
+      contact:
+        type: string
+      coordinate_x:
+        type: number
+      coordinate_y:
+        type: number
+      description:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      type:
         type: string
     type: object
   models.ParkingSlot:
@@ -138,12 +251,30 @@ definitions:
         items:
           $ref: '#/definitions/models.Sensor'
         type: array
+      status:
+        enum:
+        - available
+        - occupied
+        - reserved
+        type: string
       updated_at:
         type: string
-      zone_id:
+      zoneID:
         type: string
     required:
     - name
+    - status
+    type: object
+  models.ParkingSlotResponse:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      status:
+        type: string
+      zone_id:
+        type: string
     type: object
   models.ParkingZone:
     properties:
@@ -154,23 +285,22 @@ definitions:
       created_at:
         type: string
       hour_rate:
-        minimum: 0
         type: number
       id:
         type: string
       name:
         maxLength: 100
         type: string
+      parking:
+        allOf:
+        - $ref: '#/definitions/models.Parking'
+        description: Relationships
+      parking_id:
+        type: string
       parking_slots:
         items:
           $ref: '#/definitions/models.ParkingSlot'
         type: array
-      place:
-        allOf:
-        - $ref: '#/definitions/models.Place'
-        description: Relationships
-      parking_id:
-        type: string
       reports:
         items:
           $ref: '#/definitions/models.Report'
@@ -181,67 +311,20 @@ definitions:
     - hour_rate
     - name
     type: object
-  models.Place:
-    properties:
-      address:
-        maxLength: 500
-        minLength: 5
-        type: string
-      bookings:
-        items:
-          $ref: '#/definitions/models.Booking'
-        type: array
-      contact:
-        maxLength: 100
-        type: string
-      coordinate_x:
-        type: string
-      coordinate_y:
-        type: string
-      created_at:
-        type: string
-      description:
-        type: string
-      id:
-        type: string
-      images:
-        items:
-          $ref: '#/definitions/models.PlaceImage'
-        type: array
-      parking_zones:
-        description: Relationships
-        items:
-          $ref: '#/definitions/models.ParkingZone'
-        type: array
-      reports:
-        items:
-          $ref: '#/definitions/models.Report'
-        type: array
-      type:
-        maxLength: 50
-        type: string
-      updated_at:
-        type: string
-    required:
-    - address
-    - coordinate_x
-    - coordinate_y
-    - type
-    type: object
   models.PlaceImage:
     properties:
       created_at:
         type: string
       id:
         type: string
-      path:
-        maxLength: 500
-        type: string
-      place:
+      parking:
         allOf:
-        - $ref: '#/definitions/models.Place'
+        - $ref: '#/definitions/models.Parking'
         description: Relationship
       parking_id:
+        type: string
+      path:
+        maxLength: 500
         type: string
       updated_at:
         type: string
@@ -250,20 +333,29 @@ definitions:
     type: object
   models.Profile:
     properties:
-      auth:
-        allOf:
-        - $ref: '#/definitions/models.Auth'
-        description: Relationship
       created_at:
+        type: string
+      display_name:
+        type: string
+      email:
         type: string
       phone:
         type: string
       point:
         type: integer
+      role:
+        enum:
+        - user
+        - admin
+        - guard
+        type: string
       uid:
         type: string
       updated_at:
         type: string
+    required:
+    - display_name
+    - email
     type: object
   models.Report:
     properties:
@@ -278,14 +370,14 @@ definitions:
       image:
         maxLength: 500
         type: string
+      parking:
+        $ref: '#/definitions/models.Parking'
+      parking_id:
+        type: string
       parking_slot:
         $ref: '#/definitions/models.ParkingSlot'
       parking_zone:
         $ref: '#/definitions/models.ParkingZone'
-      place:
-        $ref: '#/definitions/models.Place'
-      parking_id:
-        type: string
       slot_id:
         type: string
       state:
@@ -301,7 +393,7 @@ definitions:
         type: string
       user:
         allOf:
-        - $ref: '#/definitions/models.Auth'
+        - $ref: '#/definitions/models.Profile'
         description: Relationships
       user_id:
         type: string
@@ -321,46 +413,6 @@ definitions:
     - ReportPending
     - ReportApproved
     - ReportRejected
-  models.Reward:
-    properties:
-      created_at:
-        type: string
-      id:
-        type: string
-      reward_redeems:
-        items:
-          $ref: '#/definitions/models.RewardRedeem'
-        type: array
-      type:
-        type: string
-      updated_at:
-        type: string
-      user:
-        allOf:
-        - $ref: '#/definitions/models.Auth'
-        description: Relationship
-      user_id:
-        type: string
-    type: object
-  models.RewardRedeem:
-    properties:
-      created_at:
-        type: string
-      id:
-        type: string
-      reward:
-        allOf:
-        - $ref: '#/definitions/models.Reward'
-        description: Relationships
-      reward_id:
-        type: string
-      updated_at:
-        type: string
-      user:
-        $ref: '#/definitions/models.Auth'
-      user_id:
-        type: string
-    type: object
   models.Sensor:
     properties:
       created_at:
@@ -385,6 +437,60 @@ definitions:
     - name
     - url
     type: object
+  models.SlotInfo:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+    type: object
+  models.UpdateParkingRequest:
+    properties:
+      address:
+        maxLength: 500
+        minLength: 5
+        type: string
+      contact:
+        maxLength: 100
+        type: string
+      coordinate_x:
+        type: number
+      coordinate_y:
+        type: number
+      description:
+        type: string
+      name:
+        maxLength: 150
+        type: string
+      type:
+        maxLength: 50
+        type: string
+    type: object
+  models.ZoneInfo:
+    properties:
+      hour_rate:
+        type: number
+      id:
+        type: string
+      name:
+        type: string
+    type: object
+  models.ZoneResponse:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+    type: object
+  utils.Response:
+    properties:
+      data: {}
+      error: {}
+      message:
+        type: string
+      status:
+        type: integer
+    type: object
 host: localhost:5000
 info:
   contact: {}
@@ -408,70 +514,86 @@ paths:
       summary: Welcome
       tags:
       - Health
-  /api/v1/auth:
+  /api/v1/bookings:
     get:
       consumes:
       - application/json
-      description: List auth records with pagination
-      parameters:
-      - description: Page number
-        in: query
-        name: page
-        type: integer
-      - description: Page size
-        in: query
-        name: page_size
-        type: integer
+      description: Retrieve all bookings for the authenticated user
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/models.Auth'
-            type: array
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/models.BookingResponse'
+                  type: array
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
         "500":
           description: Internal Server Error
           schema:
-            additionalProperties: true
-            type: object
-      summary: List auths
+            $ref: '#/definitions/utils.Response'
+      summary: Get user bookings
       tags:
-      - Auth
+      - Booking
     post:
       consumes:
       - application/json
-      description: Create a new auth record
+      description: Create a new parking slot booking (hourly rate charging starts
+        immediately)
       parameters:
-      - description: Auth payload
+      - description: Booking request
         in: body
-        name: auth
+        name: booking
         required: true
         schema:
-          $ref: '#/definitions/models.Auth'
+          $ref: '#/definitions/models.BookingRequest'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/models.Auth'
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.BookingResponse'
+              type: object
         "400":
           description: Bad Request
           schema:
-            additionalProperties: true
-            type: object
-      summary: Create Auth
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Create booking
       tags:
-      - Auth
-  /api/v1/auth/{id}:
+      - Booking
+  /api/v1/bookings/{id}:
     delete:
       consumes:
       - application/json
-      description: Delete an auth record by UUID
+      description: Delete booking by ID (owner only)
       parameters:
-      - description: Auth UUID
+      - description: Booking UUID
         in: path
         name: id
         required: true
@@ -482,27 +604,32 @@ paths:
         "200":
           description: OK
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/utils.Response'
         "400":
           description: Bad Request
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
         "404":
           description: Not Found
           schema:
-            additionalProperties: true
-            type: object
-      summary: Delete an auth
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Delete booking
       tags:
-      - Auth
+      - Booking
     get:
       consumes:
       - application/json
-      description: Retrieve an auth record by UUID
+      description: Retrieve booking by ID (owner only)
       parameters:
-      - description: Auth UUID
+      - description: Booking UUID
         in: path
         name: id
         required: true
@@ -513,73 +640,376 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.Auth'
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.BookingResponse'
+              type: object
         "400":
           description: Bad Request
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
         "404":
           description: Not Found
           schema:
-            additionalProperties: true
-            type: object
-      summary: Get auth by ID
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Get booking
       tags:
-      - Auth
+      - Booking
     put:
       consumes:
       - application/json
-      description: Update an auth record by UUID
+      description: Update booking status or details
       parameters:
-      - description: Auth UUID
+      - description: Booking UUID
         in: path
         name: id
         required: true
         type: string
-      - description: Auth payload
+      - description: Booking payload
         in: body
-        name: auth
+        name: booking
         required: true
         schema:
-          $ref: '#/definitions/models.Auth'
+          $ref: '#/definitions/models.Booking'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.Auth'
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Booking'
+              type: object
         "400":
           description: Bad Request
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
         "404":
           description: Not Found
           schema:
-            additionalProperties: true
-            type: object
-      summary: Update an auth
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Update booking
       tags:
-      - Auth
-  /api/v1/parking-zones:
+      - Booking
+  /api/v1/bookings/{id}/cancel:
+    post:
+      consumes:
+      - application/json
+      description: Cancel confirmed booking and release slot
+      parameters:
+      - description: Booking UUID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Cancel booking
+      tags:
+      - Booking
+  /api/v1/bookings/{id}/checkin:
+    post:
+      consumes:
+      - application/json
+      description: Mark booking as checked-in
+      parameters:
+      - description: Booking UUID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Booking'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Check-in booking
+      tags:
+      - Booking
+  /api/v1/bookings/{id}/checkout:
+    post:
+      consumes:
+      - application/json
+      description: Mark booking as completed and release slot
+      parameters:
+      - description: Booking UUID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Booking'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Checkout booking
+      tags:
+      - Booking
+  /api/v1/bookings/history:
     get:
       consumes:
       - application/json
-      description: List parking zones with optional filtering and pagination
+      description: Retrieve booking history for current user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/models.BookingResponse'
+                  type: array
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Get user booking history
+      tags:
+      - Booking
+  /api/v1/parking:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve all parking locations with available slot count
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/models.ParkingResponse'
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: List parking
+      tags:
+      - Parking
+    post:
+      consumes:
+      - application/json
+      description: Create a new parking location
       parameters:
-      - description: Page number
-        in: query
-        name: page
-        type: integer
-      - description: Page size
-        in: query
-        name: page_size
-        type: integer
-      - description: Place UUID
-        in: query
+      - description: Parking payload
+        in: body
+        name: parking
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateParkingRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Parking'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Create parking
+      tags:
+      - Parking
+  /api/v1/parking/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete parking by UUID
+      parameters:
+      - description: Parking UUID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  type: string
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Delete parking
+      tags:
+      - Parking
+    put:
+      consumes:
+      - application/json
+      description: Update parking information by UUID
+      parameters:
+      - description: Parking UUID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Parking payload
+        in: body
+        name: parking
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateParkingRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Parking'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Update parking
+      tags:
+      - Parking
+  /api/v1/parking/{parking_id}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve parking details including zones and images
+      parameters:
+      - description: Parking UUID
+        in: path
         name: parking_id
+        required: true
         type: string
       produces:
       - application/json
@@ -587,146 +1017,198 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/models.ParkingZone'
-            type: array
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.ParkingDetailResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.Response'
         "500":
           description: Internal Server Error
           schema:
-            additionalProperties: true
-            type: object
-      summary: List parking zones
+            $ref: '#/definitions/utils.Response'
+      summary: Get parking by ID
       tags:
-      - ParkingZone
+      - Parking
+  /api/v1/parking/{parking_id}/zones/{zone_id}/slots:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve all parking slots inside a specific zone
+      parameters:
+      - description: Parking UUID
+        in: path
+        name: parking_id
+        required: true
+        type: string
+      - description: Zone UUID
+        in: path
+        name: zone_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/models.ParkingSlotResponse'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Get parking slots
+      tags:
+      - ParkingSlot
+  /api/v1/profile:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a profile record by UUID
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Profile'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Get profile by UID
+      tags:
+      - Profile
     post:
       consumes:
       - application/json
-      description: Create a new parking zone
+      description: Create a new profile record
       parameters:
-      - description: ParkingZone payload
+      - description: Profile payload
         in: body
-        name: zone
+        name: profile
         required: true
         schema:
-          $ref: '#/definitions/models.ParkingZone'
+          $ref: '#/definitions/models.Profile'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/models.ParkingZone'
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Profile'
+              type: object
         "400":
           description: Bad Request
           schema:
-            additionalProperties: true
-            type: object
-      summary: Create Parking Zone
+            $ref: '#/definitions/utils.Response'
+      summary: Create Profile
       tags:
-      - ParkingZone
-  /api/v1/parking-zones/{id}:
-    delete:
-      consumes:
-      - application/json
-      description: Delete a parking zone by UUID
-      parameters:
-      - description: ParkingZone UUID
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties: true
-            type: object
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties: true
-            type: object
-        "404":
-          description: Not Found
-          schema:
-            additionalProperties: true
-            type: object
-      summary: Delete a parking zone
-      tags:
-      - ParkingZone
-    get:
-      consumes:
-      - application/json
-      description: Retrieve a parking zone by UUID
-      parameters:
-      - description: ParkingZone UUID
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.ParkingZone'
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties: true
-            type: object
-        "404":
-          description: Not Found
-          schema:
-            additionalProperties: true
-            type: object
-      summary: Get parking zone by ID
-      tags:
-      - ParkingZone
+      - Profile
     put:
       consumes:
       - application/json
-      description: Update a parking zone by UUID
+      description: Update a profile by UUID
       parameters:
-      - description: ParkingZone UUID
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: ParkingZone payload
+      - description: Profile payload
         in: body
-        name: zone
+        name: profile
         required: true
         schema:
-          $ref: '#/definitions/models.ParkingZone'
+          $ref: '#/definitions/models.Profile'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.ParkingZone'
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Profile'
+              type: object
         "400":
           description: Bad Request
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/utils.Response'
         "404":
           description: Not Found
           schema:
-            additionalProperties: true
-            type: object
-      summary: Update a parking zone
+            $ref: '#/definitions/utils.Response'
+      summary: Update profile
       tags:
-      - ParkingZone
-  /api/v1/places:
+      - Profile
+  /api/v1/profile/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a profile by UUID
+      parameters:
+      - description: Profile UUID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Delete profile
+      tags:
+      - Profile
+  /api/v1/profiles:
     get:
       consumes:
       - application/json
-      description: List places with optional filtering and pagination
+      description: List profiles with pagination
       parameters:
       - description: Page number
         in: query
@@ -736,151 +1218,27 @@ paths:
         in: query
         name: page_size
         type: integer
-      - description: Place type
-        in: query
-        name: type
-        type: string
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/models.Place'
-            type: array
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/models.Profile'
+                  type: array
+              type: object
         "500":
           description: Internal Server Error
           schema:
-            additionalProperties: true
-            type: object
-      summary: List places
+            $ref: '#/definitions/utils.Response'
+      summary: List profiles
       tags:
-      - Place
-    post:
-      consumes:
-      - application/json
-      description: Create a new place
-      parameters:
-      - description: Place payload
-        in: body
-        name: place
-        required: true
-        schema:
-          $ref: '#/definitions/models.Place'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            $ref: '#/definitions/models.Place'
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties: true
-            type: object
-      summary: Create Place
-      tags:
-      - Place
-  /api/v1/places/{id}:
-    delete:
-      consumes:
-      - application/json
-      description: Delete a place by UUID
-      parameters:
-      - description: Place UUID
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties: true
-            type: object
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties: true
-            type: object
-        "404":
-          description: Not Found
-          schema:
-            additionalProperties: true
-            type: object
-      summary: Delete a place
-      tags:
-      - Place
-    get:
-      consumes:
-      - application/json
-      description: Retrieve a place by UUID
-      parameters:
-      - description: Place UUID
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.Place'
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties: true
-            type: object
-        "404":
-          description: Not Found
-          schema:
-            additionalProperties: true
-            type: object
-      summary: Get place by ID
-      tags:
-      - Place
-    put:
-      consumes:
-      - application/json
-      description: Update a place by UUID
-      parameters:
-      - description: Place UUID
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: Place payload
-        in: body
-        name: place
-        required: true
-        schema:
-          $ref: '#/definitions/models.Place'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.Place'
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties: true
-            type: object
-        "404":
-          description: Not Found
-          schema:
-            additionalProperties: true
-            type: object
-      summary: Update a place
-      tags:
-      - Place
+      - Profile
   /health:
     get:
       consumes:

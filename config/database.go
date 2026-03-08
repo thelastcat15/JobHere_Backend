@@ -6,7 +6,6 @@ import (
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"jodhere.backend/cronjobs"
 	"jodhere.backend/models"
 )
 
@@ -41,10 +40,6 @@ func InitSupabaseDB() error {
 	}
 
 	log.Println("✅ All migrations completed successfully")
-
-	cronjobs.StartBookingCron(db)
-
-	log.Println("✅ Start Cronjob completed successfully")
 
 	return nil
 }
