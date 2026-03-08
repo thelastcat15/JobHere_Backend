@@ -1,9 +1,11 @@
 import json
+import re
 
-with open("seeds/parking.json", "r", encoding="utf-8") as f:
+with open("./seeds/parking.json", "r", encoding="utf-8") as f:
     data = json.load(f)
 
 output = []
+
 output.append("""
 DO $$
 DECLARE
@@ -15,11 +17,18 @@ BEGIN
 """)
 
 for p in data[:30]:
+
     name = p["title"].replace("'", "''")
     address = p["carpark_address"].replace("'", "''")
     lat = p["lat"]
     lng = p["lng"]
     tel = p["carpark_tel"]
+
+    # extract image url from html
+    img = ""
+    match = re.search(r'src="([^"]+)"', p["thumbnail"])
+    if match:
+        img = match.group(1)
 
     output.append(f"""
     INSERT INTO parkings
@@ -38,6 +47,18 @@ for p in data[:30]:
     )
     RETURNING id INTO parking_id;
 
+    -- insert image
+    INSERT INTO place_images
+    (parking_id, path, created_at, updated_at)
+    VALUES
+    (
+        parking_id,
+        '{img}',
+        NOW(),
+        NOW()
+    );
+
+    -- create zones
     FOR j IN 1..3 LOOP
 
         INSERT INTO parking_zones
@@ -52,6 +73,7 @@ for p in data[:30]:
         )
         RETURNING id INTO zone_id;
 
+        -- create slots
         FOR k IN 1..10 LOOP
 
             INSERT INTO parking_slots
@@ -74,8 +96,7 @@ output.append("""
 END $$;
 """)
 
-# save to txt
-with open("seeds/mock_parking_sql.txt", "w", encoding="utf-8") as f:
+with open("./seeds/mock_parking_sql.txt", "w", encoding="utf-8") as f:
     f.write("\n".join(output))
 
-print("SQL saved to seeds/mock_parking_sql.txt")
+print("mock_parking_sql.txt generated")

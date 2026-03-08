@@ -1,0 +1,1 @@
+INSERT INTO "public"."profiles" ("uid", "email", "display_name", "role", "point", "phone", "created_at", "updated_at") VALUES ('7178f956-3e58-412c-ba28-44c18def50c4', 'test@gmail.com', 'TheLastCat', 'user', '0', '0123456789', '2026-03-08 12:57:04.203804+00', '2026-03-08 13:20:42.392137+00');
