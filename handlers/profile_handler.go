@@ -2,6 +2,9 @@ package handlers
 
 import (
 	"errors"
+	"fmt"
+	"net/http"
+	"os"
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
@@ -201,6 +204,7 @@ func DeleteProfile(c *fiber.Ctx) error {
 		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Invalid UUID format", nil)
 	}
 
+	// 1. Delete profile from DB
 	result := config.DB.Delete(&models.Profile{}, "uid = ?", uid)
 	if result.Error != nil {
 		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to delete profile", result.Error.Error())
@@ -208,6 +212,31 @@ func DeleteProfile(c *fiber.Ctx) error {
 
 	if result.RowsAffected == 0 {
 		return utils.ErrorResponse(c, fiber.StatusNotFound, "Profile not found", nil)
+	}
+
+	// 2. Delete auth user from Supabase
+	supabaseURL := os.Getenv("SUPABASE_URL")
+	serviceRoleKey := os.Getenv("SUPABASE_SERVICE_ROLE_KEY")
+
+	req, err := http.NewRequest(
+		http.MethodDelete,
+		fmt.Sprintf("%s/auth/v1/admin/users/%s", supabaseURL, uidStr),
+		nil,
+	)
+	if err != nil {
+		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to build auth delete request", err.Error())
+	}
+	req.Header.Set("apikey", serviceRoleKey)
+	req.Header.Set("Authorization", "Bearer "+serviceRoleKey)
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to delete auth user", err.Error())
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Supabase failed to delete auth user", nil)
 	}
 
 	return utils.SuccessResponse(c, fiber.StatusOK, "Profile deleted successfully", nil)
